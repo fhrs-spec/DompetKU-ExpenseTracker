@@ -156,3 +156,62 @@ export async function getMonthlySummary(year?: number, month?: number) {
     netDifference,
   };
 }
+
+export async function getDashboardChartData(year?: number, month?: number) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const now = new Date();
+  const targetYear = year ?? now.getFullYear();
+  const targetMonth = month ?? now.getMonth() + 1;
+
+  const startDate = `${targetYear}-${String(targetMonth).padStart(2, "0")}-01`;
+  const lastDay = new Date(targetYear, targetMonth, 0).getDate();
+  const endDate = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+  const { data } = await supabase
+    .from("transactions")
+    .select("transaction_date, amount, type")
+    .eq("user_id", user.id)
+    .gte("transaction_date", startDate)
+    .lte("transaction_date", endDate)
+    .order("transaction_date", { ascending: true });
+
+  if (!data) return [];
+
+  const monthLabel = new Intl.DateTimeFormat("id-ID", { month: "short" }).format(
+    new Date(targetYear, targetMonth - 1, 1)
+  );
+
+  const map = new Map<string, { date: string; income: number; expense: number }>();
+
+  for (let d = 1; d <= lastDay; d++) {
+    const dayStr = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    map.set(dayStr, {
+      date: `${d} ${monthLabel}`,
+      income: 0,
+      expense: 0,
+    });
+  }
+
+  const rows = data as unknown as Array<{
+    transaction_date: string;
+    amount: number;
+    type: "income" | "expense";
+  }>;
+
+  rows.forEach((item) => {
+    const entry = map.get(item.transaction_date);
+    if (entry) {
+      const amt = Number(item.amount) || 0;
+      if (item.type === "income") entry.income += amt;
+      else entry.expense += amt;
+    }
+  });
+
+  return Array.from(map.values());
+}
