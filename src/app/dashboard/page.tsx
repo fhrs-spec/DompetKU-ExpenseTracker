@@ -4,10 +4,12 @@ import {
   getTransactions,
   getDashboardChartData,
 } from "@/lib/db/transactions";
+import { getSavingsGoals } from "@/lib/db/savings";
 import { AppLayout } from "@/components/layout/app-layout";
 import { BalanceCards } from "@/components/dashboard/balance-cards";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { MonthlyOverviewChart } from "@/components/dashboard/monthly-overview-chart";
+import { DashboardGoalsPreview } from "@/components/dashboard/dashboard-goals-preview";
 import { QuickAddModal } from "@/components/dashboard/quick-add-modal";
 
 export default async function DashboardPage() {
@@ -16,10 +18,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [summary, transactions, chartData] = await Promise.all([
+  const [summary, transactions, chartData, goals] = await Promise.all([
     getMonthlySummary(),
     getTransactions(),
     getDashboardChartData(),
+    getSavingsGoals(),
   ]);
 
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Pengguna";
@@ -51,13 +54,14 @@ export default async function DashboardPage() {
           netDifference={summary.netDifference}
         />
 
-        {/* Visualizations & Recent Activity Grid */}
+        {/* Visualizations & Activity Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-7">
             <MonthlyOverviewChart data={chartData} />
           </div>
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 space-y-6">
             <RecentTransactions transactions={transactions} />
+            <DashboardGoalsPreview goals={goals} />
           </div>
         </div>
       </div>
