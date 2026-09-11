@@ -1,11 +1,8 @@
--- ==============================================================================
--- DOMPETKU - Supabase PostgreSQL Schema & Row Level Security (RLS)
--- ==============================================================================
+-- DompetKU schema
 
--- 1. Enable pgcrypto for UUID generation if not already active
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 2. Create PROFILES table (Linked directly to auth.users)
+-- Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -14,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. Create TRANSACTIONS table
+-- Transactions
 CREATE TABLE IF NOT EXISTS public.transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -28,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. Create SAVINGS_GOALS table
+-- Savings goals
 CREATE TABLE IF NOT EXISTS public.savings_goals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -39,9 +36,7 @@ CREATE TABLE IF NOT EXISTS public.savings_goals (
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- ==============================================================================
--- INDEXES FOR QUERY OPTIMIZATION
--- ==============================================================================
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date 
   ON public.transactions(user_id, transaction_date DESC);
 
@@ -51,14 +46,11 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user_category
 CREATE INDEX IF NOT EXISTS idx_savings_goals_user 
   ON public.savings_goals(user_id);
 
--- ==============================================================================
--- ROW LEVEL SECURITY (RLS)
--- ==============================================================================
+-- RLS policies
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.savings_goals ENABLE ROW LEVEL SECURITY;
 
--- Profiles Policies
 CREATE POLICY "Users can view their own profile" 
   ON public.profiles FOR SELECT 
   USING (auth.uid() = id);
@@ -67,7 +59,6 @@ CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE 
   USING (auth.uid() = id);
 
--- Transactions Policies
 CREATE POLICY "Users can view their own transactions" 
   ON public.transactions FOR SELECT 
   USING (auth.uid() = user_id);
@@ -84,7 +75,6 @@ CREATE POLICY "Users can delete their own transactions"
   ON public.transactions FOR DELETE 
   USING (auth.uid() = user_id);
 
--- Savings Goals Policies
 CREATE POLICY "Users can view their own savings goals" 
   ON public.savings_goals FOR SELECT 
   USING (auth.uid() = user_id);
@@ -101,9 +91,7 @@ CREATE POLICY "Users can delete their own savings goals"
   ON public.savings_goals FOR DELETE 
   USING (auth.uid() = user_id);
 
--- ==============================================================================
--- AUTOMATIC PROFILE CREATION TRIGGER ON SIGNUP
--- ==============================================================================
+-- Auth trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -119,15 +107,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger execution on auth.users insert
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ==============================================================================
--- AUTOMATIC updated_at TRIGGER FOR TRANSACTIONS
--- ==============================================================================
+-- Timestamp trigger
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN

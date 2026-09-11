@@ -80,7 +80,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Pencatat pemasukan dan pengeluaran modern dengan antarmuka yang
+            Pencatat pemasukan dan pengeluaran dengan antarmuka yang
             bersih, analitik bulanan real-time, target tabungan, dan ekspor
             laporan instan.
           </p>
@@ -155,7 +155,7 @@ export default async function HomePage() {
                 <FileText className="h-6 w-6" />
               </div>
               <h3 className="text-base font-semibold text-foreground">
-                Ekspor PDF Resmi
+                Ekspor Laporan PDF
               </h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Unduh rekapitulasi keuangan bulanan dalam format dokumen PDF rapi yang siap dicetak atau disimpan.
