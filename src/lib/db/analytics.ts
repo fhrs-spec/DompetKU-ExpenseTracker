@@ -28,13 +28,23 @@ export interface AnalyticsStats {
   transactionCount: number;
 }
 
+export interface ReportTransaction {
+  title: string;
+  amount: number;
+  type: "income" | "expense";
+  category: string;
+  transaction_date: string;
+}
+
 export interface AnalyticsData {
   selectedMonth: number;
   selectedYear: number;
+  totalBalance: number;
   stats: AnalyticsStats;
   categoryExpenses: CategoryExpense[];
   multiMonthTrend: MonthlyComparison[];
   balanceTrend: BalanceTrendPoint[];
+  transactions: ReportTransaction[];
 }
 
 const CATEGORY_COLORS = [
@@ -66,6 +76,7 @@ export async function getAnalyticsData(
     return {
       selectedMonth,
       selectedYear,
+      totalBalance: 0,
       stats: {
         totalIncome: 0,
         totalExpense: 0,
@@ -78,7 +89,26 @@ export async function getAnalyticsData(
       categoryExpenses: [],
       multiMonthTrend: [],
       balanceTrend: [],
+      transactions: [],
     };
+  }
+
+  // 0. Compute overall total balance
+  const { data: allTxs } = await supabase
+    .from("transactions")
+    .select("amount, type")
+    .eq("user_id", user.id);
+
+  let totalBalance = 0;
+  if (allTxs) {
+    const rows = allTxs as unknown as Array<{
+      amount: number;
+      type: "income" | "expense";
+    }>;
+    totalBalance = rows.reduce((acc, curr) => {
+      const amt = Number(curr.amount) || 0;
+      return curr.type === "income" ? acc + amt : acc - amt;
+    }, 0);
   }
 
   // Calculate start & end of selected month
@@ -89,13 +119,14 @@ export async function getAnalyticsData(
   // 1. Fetch transactions for selected month
   const { data: monthTransactions } = await supabase
     .from("transactions")
-    .select("amount, type, category, transaction_date")
+    .select("title, amount, type, category, transaction_date")
     .eq("user_id", user.id)
     .gte("transaction_date", startDate)
     .lte("transaction_date", endDate)
-    .order("transaction_date", { ascending: true });
+    .order("transaction_date", { ascending: false });
 
   const currentMonthRows = (monthTransactions as unknown as Array<{
+    title: string;
     amount: number;
     type: "income" | "expense";
     category: string;
@@ -227,6 +258,7 @@ export async function getAnalyticsData(
   return {
     selectedMonth,
     selectedYear,
+    totalBalance,
     stats: {
       totalIncome,
       totalExpense,
@@ -239,5 +271,6 @@ export async function getAnalyticsData(
     categoryExpenses,
     multiMonthTrend,
     balanceTrend,
+    transactions: currentMonthRows,
   };
 }

@@ -6,6 +6,7 @@ import { AnalyticsStatsCards } from "@/components/charts/analytics-stats";
 import { ExpensePieChart } from "@/components/charts/expense-pie-chart";
 import { MultiMonthBarChart } from "@/components/charts/multi-month-bar-chart";
 import { BalanceLineChart } from "@/components/charts/balance-line-chart";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 
 interface AnalyticsPageProps {
   searchParams: Promise<{
@@ -30,10 +31,27 @@ export default async function AnalyticsPage({
   const analytics = await getAnalyticsData(selectedYear, selectedMonth);
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Pengguna";
 
+  const monthName = new Intl.DateTimeFormat("id-ID", { month: "long" }).format(
+    new Date(selectedYear, selectedMonth - 1, 1)
+  );
+  const periodLabel = `${monthName} ${selectedYear}`;
+
+  const reportData = {
+    userName,
+    userEmail: user?.email || "user@dompetku.local",
+    period: periodLabel,
+    totalBalance: analytics.totalBalance,
+    totalIncome: analytics.stats.totalIncome,
+    totalExpense: analytics.stats.totalExpense,
+    netSavings: analytics.stats.netSavings,
+    categories: analytics.categoryExpenses,
+    transactions: analytics.transactions,
+  };
+
   return (
     <AppLayout userName={userName} userEmail={user?.email}>
       <div className="space-y-8">
-        {/* Page Header with Period Filter */}
+        {/* Page Header with Period Filter & PDF Export */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
@@ -44,10 +62,13 @@ export default async function AnalyticsPage({
             </p>
           </div>
 
-          <MonthYearPicker
-            currentMonth={selectedMonth}
-            currentYear={selectedYear}
-          />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <MonthYearPicker
+              currentMonth={selectedMonth}
+              currentYear={selectedYear}
+            />
+            <ExportPdfButton reportData={reportData} />
+          </div>
         </div>
 
         {/* 4 Financial Insight Metrics */}
