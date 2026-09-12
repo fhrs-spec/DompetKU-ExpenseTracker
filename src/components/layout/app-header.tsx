@@ -25,10 +25,20 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  // Close mobile menu on path change
+  // Close mobile menu on path change or Escape key
   React.useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    if (mobileMenuOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border bg-card/80 px-4 sm:px-6 backdrop-blur-md">
@@ -65,49 +75,56 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
         <ThemeToggle />
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Backdrop & Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-card p-4 shadow-xl md:hidden">
-          <div className="mb-4 pb-3 border-b border-border">
-            <p className="text-sm font-semibold text-foreground">{userName || "Pengguna"}</p>
-            <p className="text-xs text-muted-foreground">{userEmail || ""}</p>
-          </div>
+        <>
+          <div
+            className="fixed inset-0 top-16 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-card p-4 shadow-xl md:hidden">
+            <div className="mb-4 pb-3 border-b border-border">
+              <p className="text-sm font-semibold text-foreground">{userName || "Pengguna"}</p>
+              <p className="text-xs text-muted-foreground">{userEmail || ""}</p>
+            </div>
 
-          <nav className="flex flex-col space-y-1">
-            {NAV_ITEMS.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
+            <nav className="flex flex-col space-y-1">
+              {NAV_ITEMS.map((item) => {
+                const isActive =
+                  pathname === item.href || pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="mt-4 pt-3 border-t border-border">
+              <form action={logoutAction}>
+                <Button
+                  variant="ghost"
+                  type="submit"
+                  size="sm"
+                  className="w-full justify-start text-destructive hover:bg-destructive/10"
                 >
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="mt-4 pt-3 border-t border-border">
-            <form action={logoutAction}>
-              <Button
-                variant="ghost"
-                type="submit"
-                size="sm"
-                className="w-full justify-start text-destructive hover:bg-destructive/10"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Keluar dari Akun
-              </Button>
-            </form>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Keluar dari Akun
+                </Button>
+              </form>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );

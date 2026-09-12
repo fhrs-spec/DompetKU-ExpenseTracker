@@ -4,10 +4,7 @@ import * as React from "react";
 import { FileDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  generateMonthlyReportPDF,
-  MonthlyReportData,
-} from "@/lib/pdf/generate-report";
+import type { MonthlyReportData } from "@/lib/pdf/generate-report";
 
 interface ExportPdfButtonProps {
   reportData: MonthlyReportData;
@@ -26,21 +23,14 @@ export function ExportPdfButton({
     setIsGenerating(true);
     try {
       toast.info("Menyiapkan dokumen PDF laporan keuangan...");
-      // Small timeout to allow UI spinner to paint
-      setTimeout(() => {
-        try {
-          generateMonthlyReportPDF(reportData);
-          toast.success("Laporan PDF berhasil diunduh!");
-        } catch (err) {
-          console.error("PDF generation error:", err);
-          toast.error("Gagal mengunduh dokumen PDF.");
-        } finally {
-          setIsGenerating(false);
-        }
-      }, 300);
-    } catch {
+      const { generateMonthlyReportPDF } = await import("@/lib/pdf/generate-report");
+      generateMonthlyReportPDF(reportData);
+      toast.success("Laporan PDF berhasil diunduh!");
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      toast.error("Gagal mengunduh dokumen PDF.");
+    } finally {
       setIsGenerating(false);
-      toast.error("Gagal memproses dokumen.");
     }
   };
 

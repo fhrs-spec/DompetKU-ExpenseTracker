@@ -29,7 +29,7 @@ export function BalanceCards({
       {/* 1. Total Saldo Kumulatif */}
       <Card className="p-6 transition-all hover:border-primary/40">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Total Saldo
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -49,7 +49,7 @@ export function BalanceCards({
       {/* 2. Total Pemasukan Bulan Ini */}
       <Card className="p-6 transition-all hover:border-emerald-500/40">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Pemasukan Bulan Ini
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -69,7 +69,7 @@ export function BalanceCards({
       {/* 3. Total Pengeluaran Bulan Ini */}
       <Card className="p-6 transition-all hover:border-destructive/40">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Pengeluaran Bulan Ini
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
@@ -95,7 +95,7 @@ export function BalanceCards({
         }`}
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Tabungan Bersih
           </span>
           <div

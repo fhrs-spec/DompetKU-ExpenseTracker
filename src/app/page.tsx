@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function HomePage() {
   let user = null;
@@ -37,33 +38,36 @@ export default async function HomePage() {
             </span>
           </div>
 
-          <nav className="flex items-center gap-3">
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-soft hover:bg-primary/90 transition-colors"
-              >
-                Buka Dashboard
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            ) : (
-              <>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <nav className="flex items-center gap-2 sm:gap-3">
+              {user ? (
                 <Link
-                  href="/login"
-                  className="rounded-xl px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-soft hover:bg-primary/90 transition-colors"
                 >
-                  Masuk
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-soft hover:bg-primary/90 transition-colors"
-                >
-                  Daftar Sekarang
+                  Buka Dashboard
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-              </>
-            )}
-          </nav>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-xl px-3 sm:px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                  >
+                    Masuk
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground shadow-soft hover:bg-primary/90 transition-colors"
+                  >
+                    Daftar Sekarang
+                    <ArrowRight className="h-4 w-4 hidden sm:inline" />
+                  </Link>
+                </>
+              )}
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

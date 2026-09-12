@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DompetKU — Pengelola Keuangan Pribadi yang Cerdas & Minimalis",
+  title: "DompetKU — Pengelola Keuangan Pribadi",
   description:
-    "Aplikasi pencatat pemasukan dan pengeluaran pribadi modern untuk memantau kondisi finansial bulanan secara real-time.",
+    "Pencatat pemasukan, pengeluaran, dan target tabungan bulanan dengan visualisasi analitik dan laporan PDF.",
 };
 
 export default function RootLayout({

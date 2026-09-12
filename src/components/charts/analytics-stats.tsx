@@ -19,7 +19,7 @@ export function AnalyticsStatsCards({ stats }: AnalyticsStatsProps) {
       {/* 1. Tingkat Tabungan (Savings Rate) */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Rasio Tabungan
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -45,7 +45,7 @@ export function AnalyticsStatsCards({ stats }: AnalyticsStatsProps) {
       {/* 2. Pengeluaran Terbesar */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Beban Terbesar
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
@@ -70,7 +70,7 @@ export function AnalyticsStatsCards({ stats }: AnalyticsStatsProps) {
       {/* 3. Rata-rata Harian */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Rata-rata / Hari
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
@@ -90,7 +90,7 @@ export function AnalyticsStatsCards({ stats }: AnalyticsStatsProps) {
       {/* 4. Total Transaksi */}
       <Card className="p-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Aktivitas Transaksi
           </span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
