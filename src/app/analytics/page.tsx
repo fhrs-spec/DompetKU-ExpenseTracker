@@ -7,6 +7,7 @@ import { ExpensePieChart } from "@/components/charts/expense-pie-chart";
 import { MultiMonthBarChart } from "@/components/charts/multi-month-bar-chart";
 import { BalanceLineChart } from "@/components/charts/balance-line-chart";
 import { ExportPdfButton } from "@/components/export-pdf-button";
+import { AiAdvisorCard } from "@/components/analytics/ai-advisor-card";
 
 interface AnalyticsPageProps {
   searchParams: Promise<{
@@ -73,6 +74,13 @@ export default async function AnalyticsPage({
 
         {/* 4 Financial Insight Metrics */}
         <AnalyticsStatsCards stats={analytics.stats} />
+
+        {/* AI Financial Health Audit */}
+        <AiAdvisorCard
+          year={selectedYear}
+          month={selectedMonth}
+          periodLabel={periodLabel}
+        />
 
         {/* Breakdown Row: Pie Chart & Line Trend */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

@@ -27,6 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, formatCurrency } from "@/lib/utils";
+import { AiQuickInput } from "./ai-quick-input";
+import { ParsedAITransaction } from "@/lib/ai/parse-transaction";
 
 interface TransactionFormProps {
   initialData?: Transaction;
@@ -109,8 +111,26 @@ export function TransactionForm({
     }
   };
 
+  const handleAIParsed = (parsed: ParsedAITransaction) => {
+    setValue("title", parsed.title, { shouldValidate: true });
+    setValue("amount", parsed.amount, { shouldValidate: true });
+    setValue("type", parsed.type, { shouldValidate: true });
+    setValue("category", parsed.category, { shouldValidate: true });
+    setValue("transaction_date", parsed.transaction_date, { shouldValidate: true });
+    if (parsed.note) {
+      setValue("note", parsed.note, { shouldValidate: true });
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      {/* Smart AI Quick Input (Only for new transactions) */}
+      {!isEdit && (
+        <div className="pb-2 border-b border-border/60">
+          <AiQuickInput onParsed={handleAIParsed} disabled={isLoading} />
+        </div>
+      )}
+
       {/* Type Selector (Pemasukan vs Pengeluaran) */}
       <div className="space-y-2">
         <Label>Jenis Transaksi</Label>
