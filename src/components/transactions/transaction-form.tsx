@@ -122,12 +122,49 @@ export function TransactionForm({
     }
   };
 
+  const handleAIDirectSave = async (parsed: ParsedAITransaction): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const res = await createTransactionAction({
+        title: parsed.title,
+        amount: parsed.amount,
+        type: parsed.type,
+        category: parsed.category,
+        transaction_date: parsed.transaction_date,
+        note: parsed.note || "",
+      });
+
+      if (!res.success) {
+        toast.error(res.error || "Gagal menyimpan transaksi");
+        return false;
+      }
+
+      toast.success(`Transaksi "${parsed.title}" berhasil dicatat ke database!`);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push("/transactions");
+        router.refresh();
+      }
+      return true;
+    } catch {
+      toast.error("Terjadi kendala saat menyimpan transaksi.");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       {/* Smart AI Quick Input (Only for new transactions) */}
       {!isEdit && (
         <div className="pb-2 border-b border-border/60">
-          <AiQuickInput onParsed={handleAIParsed} disabled={isLoading} />
+          <AiQuickInput
+            onParsed={handleAIParsed}
+            onDirectSave={handleAIDirectSave}
+            disabled={isLoading}
+          />
         </div>
       )}
 
