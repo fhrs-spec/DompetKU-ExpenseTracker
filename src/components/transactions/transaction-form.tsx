@@ -156,10 +156,10 @@ export function TransactionForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 sm:space-y-4.5" noValidate>
       {/* Smart AI Quick Input (Only for new transactions) */}
       {!isEdit && (
-        <div className="pb-2 border-b border-border/60">
+        <div className="pb-1 sm:pb-2 border-b border-border/50">
           <AiQuickInput
             onParsed={handleAIParsed}
             onDirectSave={handleAIDirectSave}
@@ -311,9 +311,9 @@ export function TransactionForm({
         </Label>
         <textarea
           id="note"
-          rows={3}
+          rows={2}
           placeholder="Tulis catatan jika diperlukan..."
-          className="flex w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors disabled:opacity-50"
+          className="flex w-full rounded-xl border border-border bg-card px-3.5 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors disabled:opacity-50"
           disabled={isLoading}
           {...register("note")}
         />
@@ -324,14 +324,16 @@ export function TransactionForm({
         )}
       </div>
 
-      {/* Form Action Buttons */}
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
+      {/* Form Action Buttons (Sticky at bottom for mobile convenience) */}
+      <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border sticky bottom-0 bg-card/95 backdrop-blur-sm py-2 -mx-1 px-1 z-10">
         {onCancel ? (
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={isLoading}
+            size="sm"
+            className="h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm"
           >
             Batal
           </Button>
@@ -341,13 +343,20 @@ export function TransactionForm({
             variant="outline"
             onClick={() => router.back()}
             disabled={isLoading}
+            size="sm"
+            className="h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm"
           >
             Kembali
           </Button>
         )}
 
-        <Button type="submit" isLoading={isLoading} className="gap-2">
-          <Save className="h-4 w-4" />
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          size="sm"
+          className="h-9 sm:h-10 px-3.5 sm:px-4 text-xs sm:text-sm gap-1.5 shadow-soft"
+        >
+          <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           {isEdit ? "Simpan Perubahan" : "Catat Transaksi"}
         </Button>
       </div>

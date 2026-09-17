@@ -65,58 +65,57 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] dark:bg-primary/[0.05] p-4 space-y-3 transition-colors">
+    <div className="rounded-xl sm:rounded-2xl border border-primary/20 bg-primary/[0.03] dark:bg-primary/[0.05] p-2.5 sm:p-3.5 space-y-2 transition-colors">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-          <Sparkles className="h-4 w-4" />
-          <span>Catat Cepat dengan AI (Gemini Flash)</span>
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Catat Cepat dengan AI</span>
         </div>
-        <span className="text-[11px] text-muted-foreground hidden sm:inline">
-          Ekstrak otomatis lalu tinjau di formulir
+        <span className="text-[10px] text-muted-foreground">
+          Gemini Flash
         </span>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={disabled || isLoading}
-            aria-label="Kalimat transaksi untuk AI"
-            placeholder="Ketik kalimat (cth: Beli kopi kenangan 22rb tadi siang)..."
-            className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
-          />
-        </div>
+      {/* Integrated search-bar style input */}
+      <div className="relative flex items-center">
+        <input
+          type="text"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={disabled || isLoading}
+          aria-label="Kalimat transaksi untuk AI"
+          placeholder="Cth: Beli kopi kenangan 22rb tadi siang..."
+          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-3 pr-24 sm:pr-28 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
+        />
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="absolute right-1 flex items-center">
           <Button
             type="button"
             onClick={() => handleAction()}
             disabled={disabled || isLoading || !prompt.trim()}
             size="sm"
-            className="h-10 px-3.5 text-xs gap-1.5 shadow-soft bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+            className="h-7 sm:h-8 px-2.5 text-[11px] sm:text-xs gap-1 shadow-soft bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md sm:rounded-lg"
             title="Ekstrak data transaksi dengan AI ke formulir untuk ditinjau"
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3 w-3 animate-spin" />
                 <span>Mengekstrak...</span>
               </>
             ) : (
               <>
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Ekstrak ke Form</span>
+                <Sparkles className="h-3 w-3" />
+                <span>Ekstrak</span>
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {/* Quick sample chips */}
-      <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-        <span className="text-[11px] text-muted-foreground">Contoh klik cepat:</span>
+      {/* Swipeable quick sample chips in a single horizontal row */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-0.5 px-0.5 scroll-smooth">
+        <span className="text-[10px] sm:text-[11px] text-muted-foreground shrink-0 font-medium">Contoh:</span>
         {SAMPLE_PROMPTS.map((sample, idx) => (
           <button
             key={idx}
@@ -126,7 +125,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
               handleAction(sample);
             }}
             disabled={disabled || isLoading}
-            className="text-[11px] rounded-lg border border-border bg-card hover:bg-muted/80 px-2 py-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="text-[10px] sm:text-[11px] whitespace-nowrap shrink-0 rounded-md sm:rounded-lg border border-border/80 bg-card hover:bg-muted/80 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95"
           >
             &ldquo;{sample}&rdquo;
           </button>
