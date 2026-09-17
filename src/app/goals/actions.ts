@@ -59,10 +59,19 @@ export async function createSavingsGoalAction(
   return { success: true };
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function updateSavingsGoalAction(
   id: string,
   values: SavingsGoalInput
 ): Promise<GoalActionResponse> {
+  if (!id || typeof id !== "string" || !UUID_REGEX.test(id)) {
+    return {
+      success: false,
+      error: "ID target tabungan tidak valid.",
+    };
+  }
+
   const parsed = savingsGoalSchema.safeParse(values);
   if (!parsed.success) {
     return {
@@ -112,6 +121,13 @@ export async function depositSavingsGoalAction(
   id: string,
   values: DepositInput
 ): Promise<GoalActionResponse> {
+  if (!id || typeof id !== "string" || !UUID_REGEX.test(id)) {
+    return {
+      success: false,
+      error: "ID target tabungan tidak valid.",
+    };
+  }
+
   const parsed = depositSchema.safeParse(values);
   if (!parsed.success) {
     return {
@@ -132,37 +148,20 @@ export async function depositSavingsGoalAction(
     };
   }
 
-  // Fetch current goal
-  const { data: goal, error: fetchError } = await supabase
-    .from("savings_goals")
-    .select("current_amount, target_amount")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
-
-  if (fetchError || !goal) {
-    return {
-      success: false,
-      error: "Target tabungan tidak ditemukan.",
-    };
-  }
-
-  const currentAmt = Number(goal.current_amount) || 0;
-  const newAmount = currentAmt + parsed.data.amount;
-
-  const { error } = await supabase
-    .from("savings_goals")
-    .update({
-      current_amount: newAmount,
-    })
-    .eq("id", id)
-    .eq("user_id", user.id);
+  // Atomic database RPC deposit to prevent concurrency lost-update race conditions (P0-1)
+  const { error } = await supabase.rpc("deposit_to_savings_goal", {
+    p_goal_id: id,
+    p_amount: parsed.data.amount,
+  });
 
   if (error) {
-    console.error("Error depositing to savings goal:", error);
+    console.error("[DEPOSIT_ACTION_ERROR]", {
+      code: error.code,
+      message: error.message,
+    });
     return {
       success: false,
-      error: "Gagal menambahkan tabungan: " + error.message,
+      error: "Gagal menambahkan tabungan: " + (error.message || "Terjadi kesalahan server."),
     };
   }
 
@@ -175,6 +174,13 @@ export async function depositSavingsGoalAction(
 export async function deleteSavingsGoalAction(
   id: string
 ): Promise<GoalActionResponse> {
+  if (!id || typeof id !== "string" || !UUID_REGEX.test(id)) {
+    return {
+      success: false,
+      error: "ID target tabungan tidak valid.",
+    };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -197,7 +203,7 @@ export async function deleteSavingsGoalAction(
     console.error("Error deleting savings goal:", error);
     return {
       success: false,
-      error: "Gagal menghapus target tabungan: " + error.message,
+      error: "Gagal menghapus target tabungan: " + (error.message || "Terjadi kesalahan server."),
     };
   }
 

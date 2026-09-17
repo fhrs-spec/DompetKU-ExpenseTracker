@@ -11,8 +11,23 @@ export interface ParsedAITransaction {
 }
 
 export async function parseTransactionWithAI(input: string): Promise<ParsedAITransaction> {
+  const trimmedInput = input ? input.trim() : "";
+  if (!trimmedInput) {
+    throw new Error("Kalimat transaksi tidak boleh kosong.");
+  }
+  if (trimmedInput.length > 500) {
+    throw new Error("Kalimat transaksi terlalu panjang (maksimal 500 karakter).");
+  }
+
   const ai = getGeminiClient();
-  const today = new Date().toISOString().slice(0, 10);
+
+  // Anchor baseline date to Asia/Jakarta (WIB) timezone to avoid UTC midnight skew (P1-7)
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 
   const systemInstruction = `
 Kamu adalah asisten keuangan pintar untuk aplikasi DompetKU.
@@ -55,38 +70,65 @@ Format Output JSON murni:
 }
 `;
 
-  const response = await ai.models.generateContent({
-    model: GEMINI_MODEL,
-    contents: `Instruksi:\n${systemInstruction}\n\nInput Pengguna: "${input}"`,
-    config: {
-      responseMimeType: "application/json",
-      temperature: 0.1,
-    },
-  });
+  // Escape triple-quote delimiter breakout (P0-3)
+  const escapedInput = trimmedInput.replace(/"""/g, '\\"\\"\\"');
 
-  const responseText = response.text?.trim();
-  if (!responseText) {
-    throw new Error("Gagal menerima respon dari AI.");
+  // Enforce 10-second timeout ceiling (P1-6)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: `Teks transaksi yang akan diekstrak:\n"""\n${escapedInput}\n"""`,
+      config: {
+        systemInstruction, // Native SDK parameter separation (P0-3)
+        responseMimeType: "application/json",
+        temperature: 0.1,
+        maxOutputTokens: 300, // Token budget ceiling (P1-6)
+        abortSignal: controller.signal,
+      },
+    });
+
+    let responseText = response.text?.trim();
+    if (!responseText) {
+      throw new Error("Gagal menerima respon dari AI.");
+    }
+
+    // Extract JSON substring if surrounded by markdown code fences or conversational text
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const jsonString = jsonMatch ? jsonMatch[0] : responseText;
+
+    const parsed = JSON.parse(jsonString) as ParsedAITransaction;
+
+    if (
+      !parsed.title ||
+      typeof parsed.title !== "string" ||
+      typeof parsed.amount !== "number" ||
+      !Number.isFinite(parsed.amount) ||
+      parsed.amount <= 0
+    ) {
+      throw new Error("AI tidak dapat menemukan nominal atau judul transaksi yang valid.");
+    }
+
+    parsed.title = parsed.title.trim().slice(0, 100);
+    parsed.amount = Math.round(parsed.amount);
+
+    parsed.type = parsed.type === "income" ? "income" : "expense";
+
+    const validCategories =
+      parsed.type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+    if (!(validCategories as readonly string[]).includes(parsed.category)) {
+      parsed.category = "Other";
+    }
+
+    if (!parsed.transaction_date || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.transaction_date)) {
+      parsed.transaction_date = today;
+    }
+
+    return parsed;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const parsed = JSON.parse(responseText) as ParsedAITransaction;
-
-  if (!parsed.title || typeof parsed.amount !== "number" || parsed.amount <= 0) {
-    throw new Error("AI tidak dapat menemukan nominal atau judul transaksi yang valid.");
-  }
-
-  parsed.type = parsed.type === "income" ? "income" : "expense";
-
-  const validCategories =
-    parsed.type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-
-  if (!(validCategories as readonly string[]).includes(parsed.category)) {
-    parsed.category = "Other";
-  }
-
-  if (!parsed.transaction_date || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.transaction_date)) {
-    parsed.transaction_date = today;
-  }
-
-  return parsed;
 }

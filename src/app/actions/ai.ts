@@ -35,12 +35,21 @@ export async function parseTransactionAction(
     return { success: true, data: parsed };
   } catch (err) {
     console.error("AI Parse Transaction Error:", err);
+    const isTimeout =
+      err instanceof Error &&
+      (err.name === "AbortError" || err.message.toLowerCase().includes("aborted"));
+    const isQuota =
+      err instanceof Error &&
+      (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED"));
     return {
       success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Gagal memproses transaksi dengan AI. Silakan coba lagi.",
+      error: isTimeout
+        ? "Permintaan AI melebihi batas waktu (timeout 10 detik). Silakan coba lagi."
+        : isQuota
+        ? "Layanan AI sedang sibuk atau kuota tercapai. Silakan coba beberapa saat lagi."
+        : err instanceof Error
+        ? err.message
+        : "Gagal memproses transaksi dengan AI. Silakan coba lagi.",
     };
   }
 }
@@ -59,12 +68,22 @@ export async function getFinancialHealthCheckAction(
       return { success: false, error: "Silakan login terlebih dahulu." };
     }
 
-    const analytics = await getAnalyticsData(year, month);
+    const now = new Date();
+    const validYear =
+      typeof year === "number" && !isNaN(year) && year >= 2000 && year <= 2100
+        ? Math.floor(year)
+        : now.getFullYear();
+    const validMonth =
+      typeof month === "number" && !isNaN(month) && month >= 1 && month <= 12
+        ? Math.floor(month)
+        : now.getMonth() + 1;
+
+    const analytics = await getAnalyticsData(validYear, validMonth);
 
     const monthName = new Intl.DateTimeFormat("id-ID", { month: "long" }).format(
-      new Date(year, month - 1, 1)
+      new Date(validYear, validMonth - 1, 1)
     );
-    const periodLabel = `${monthName} ${year}`;
+    const periodLabel = `${monthName} ${validYear}`;
 
     const advice = await generateFinancialHealthAdvice({
       periodLabel,
@@ -79,12 +98,19 @@ export async function getFinancialHealthCheckAction(
     return { success: true, data: advice };
   } catch (err) {
     console.error("AI Financial Health Error:", err);
+    const isTimeout =
+      err instanceof Error &&
+      (err.name === "AbortError" || err.message.toLowerCase().includes("aborted"));
+    const isQuota =
+      err instanceof Error &&
+      (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED"));
     return {
       success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Gagal menghasilkan analisis finansial AI. Silakan coba lagi.",
+      error: isTimeout
+        ? "Permintaan analisis AI melebihi batas waktu (timeout 10 detik). Silakan coba lagi."
+        : isQuota
+        ? "Layanan AI sedang sibuk atau kuota tercapai. Silakan coba beberapa saat lagi."
+        : "Gagal menghasilkan analisis finansial AI. Silakan coba lagi.",
     };
   }
 }

@@ -69,8 +69,14 @@ export async function getAnalyticsData(
   } = await supabase.auth.getUser();
 
   const now = new Date();
-  const selectedYear = year ?? now.getFullYear();
-  const selectedMonth = month ?? now.getMonth() + 1;
+  const selectedYear =
+    typeof year === "number" && !isNaN(year) && year >= 2000 && year <= 2100
+      ? Math.floor(year)
+      : now.getFullYear();
+  const selectedMonth =
+    typeof month === "number" && !isNaN(month) && month >= 1 && month <= 12
+      ? Math.floor(month)
+      : now.getMonth() + 1;
 
   if (!user) {
     return {

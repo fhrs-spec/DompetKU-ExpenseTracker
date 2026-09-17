@@ -135,6 +135,14 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      deposit_to_savings_goal: {
+        Args: {
+          p_goal_id: string;
+          p_amount: number;
+        };
+        Returns: SavingsGoal;
+      };
+    };
   };
 };

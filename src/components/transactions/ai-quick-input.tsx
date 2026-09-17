@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Loader2, Zap, FileEdit } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { parseTransactionAction } from "@/app/actions/ai";
 import { ParsedAITransaction } from "@/lib/ai/parse-transaction";
@@ -20,56 +20,47 @@ const SAMPLE_PROMPTS = [
   "Bayar tagihan listrik 180rb",
 ];
 
-export function AiQuickInput({ onParsed, onDirectSave, disabled }: AiQuickInputProps) {
+export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
   const [prompt, setPrompt] = React.useState("");
-  const [loadingAction, setLoadingAction] = React.useState<"fill" | "direct_save" | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const isLoading = loadingAction !== null;
-
-  const handleAction = async (action: "fill" | "direct_save", textOverride?: string) => {
+  const handleAction = async (textOverride?: string) => {
     const text = textOverride || prompt;
-    if (!text.trim()) {
+    const trimmed = text.trim();
+    if (!trimmed) {
       toast.error("Tulis kalimat transaksi terlebih dahulu.");
       return;
     }
+    if (trimmed.length > 500) {
+      toast.error("Kalimat transaksi terlalu panjang (maksimal 500 karakter).");
+      return;
+    }
 
-    setLoadingAction(action);
+    setIsLoading(true);
     try {
-      const res = await parseTransactionAction(text);
+      const res = await parseTransactionAction(trimmed);
       if (!res.success || !res.data) {
         toast.error(res.error || "Gagal mengekstrak data transaksi.");
         return;
       }
 
-      if (action === "direct_save" && onDirectSave) {
-        // Langsung simpan ke database Supabase
-        const saved = await onDirectSave(res.data);
-        if (saved) {
-          setPrompt("");
-        }
-      } else {
-        // Isi ke form untuk ditinjau
-        onParsed(res.data);
-        toast.info(
-          `Data "${res.data.title}" masuk ke formulir. Klik "Simpan Transaksi" di bawah untuk menyimpan ke database.`
-        );
-      }
+      // Enforce human-in-the-loop review for all parsed entries to prevent unreviewed prompt injection DB commits (P0-3)
+      onParsed(res.data);
+      setPrompt("");
+      toast.success(
+        `Data "${res.data.title}" berhasil diekstrak! Tinjau dan klik "Simpan Transaksi" untuk memasukkan ke database.`
+      );
     } catch {
       toast.error("Terjadi kendala saat menghubungkan ke AI.");
     } finally {
-      setLoadingAction(null);
+      setIsLoading(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isLoading) {
       e.preventDefault();
-      // Enter langsung simpan jika onDirectSave tersedia
-      if (onDirectSave) {
-        handleAction("direct_save");
-      } else {
-        handleAction("fill");
-      }
+      handleAction();
     }
   };
 
@@ -81,7 +72,7 @@ export function AiQuickInput({ onParsed, onDirectSave, disabled }: AiQuickInputP
           <span>Catat Cepat dengan AI (Gemini Flash)</span>
         </div>
         <span className="text-[11px] text-muted-foreground hidden sm:inline">
-          Otomatis simpan ke database
+          Ekstrak otomatis lalu tinjau di formulir
         </span>
       </div>
 
@@ -93,6 +84,7 @@ export function AiQuickInput({ onParsed, onDirectSave, disabled }: AiQuickInputP
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={disabled || isLoading}
+            aria-label="Kalimat transaksi untuk AI"
             placeholder="Ketik kalimat (cth: Beli kopi kenangan 22rb tadi siang)..."
             className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
           />
@@ -101,38 +93,21 @@ export function AiQuickInput({ onParsed, onDirectSave, disabled }: AiQuickInputP
         <div className="flex items-center gap-2 shrink-0">
           <Button
             type="button"
-            variant="outline"
-            onClick={() => handleAction("fill")}
-            disabled={disabled || isLoading || !prompt.trim()}
-            size="sm"
-            className="h-10 px-3 text-xs gap-1.5"
-            title="Isi formulir di bawah untuk diperiksa/diedit terlebih dahulu"
-          >
-            {loadingAction === "fill" ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <FileEdit className="h-3.5 w-3.5 text-muted-foreground" />
-            )}
-            <span>Isi Form</span>
-          </Button>
-
-          <Button
-            type="button"
-            onClick={() => handleAction("direct_save")}
+            onClick={() => handleAction()}
             disabled={disabled || isLoading || !prompt.trim()}
             size="sm"
             className="h-10 px-3.5 text-xs gap-1.5 shadow-soft bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-            title="Ekstrak dan langsung simpan ke database"
+            title="Ekstrak data transaksi dengan AI ke formulir untuk ditinjau"
           >
-            {loadingAction === "direct_save" ? (
+            {isLoading ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Menyimpan...</span>
+                <span>Mengekstrak...</span>
               </>
             ) : (
               <>
-                <Zap className="h-3.5 w-3.5" />
-                <span>Simpan Langsung</span>
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Ekstrak ke Form</span>
               </>
             )}
           </Button>
@@ -148,7 +123,7 @@ export function AiQuickInput({ onParsed, onDirectSave, disabled }: AiQuickInputP
             type="button"
             onClick={() => {
               setPrompt(sample);
-              handleAction("direct_save", sample);
+              handleAction(sample);
             }}
             disabled={disabled || isLoading}
             className="text-[11px] rounded-lg border border-border bg-card hover:bg-muted/80 px-2 py-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"

@@ -7,6 +7,7 @@ export interface TransactionFilterOptions {
   category?: string;
   startDate?: string;
   endDate?: string;
+  limit?: number;
 }
 
 export async function getTransactions(
@@ -45,6 +46,15 @@ export async function getTransactions(
 
   if (filters?.endDate) {
     query = query.lte("transaction_date", filters.endDate);
+  }
+
+  if (
+    filters?.limit &&
+    typeof filters.limit === "number" &&
+    Number.isFinite(filters.limit) &&
+    filters.limit > 0
+  ) {
+    query = query.limit(Math.floor(filters.limit));
   }
 
   const { data, error } = await query;

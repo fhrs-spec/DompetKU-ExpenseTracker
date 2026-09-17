@@ -21,8 +21,23 @@ export default async function AnalyticsPage({
 }: AnalyticsPageProps) {
   const params = await searchParams;
   const now = new Date();
-  const selectedMonth = params.month ? parseInt(params.month, 10) : now.getMonth() + 1;
-  const selectedYear = params.year ? parseInt(params.year, 10) : now.getFullYear();
+  const rawMonth =
+    params.month && /^\d+$/.test(params.month.trim())
+      ? parseInt(params.month.trim(), 10)
+      : NaN;
+  const rawYear =
+    params.year && /^\d+$/.test(params.year.trim())
+      ? parseInt(params.year.trim(), 10)
+      : NaN;
+
+  const selectedMonth =
+    !isNaN(rawMonth) && rawMonth >= 1 && rawMonth <= 12
+      ? rawMonth
+      : now.getMonth() + 1;
+  const selectedYear =
+    !isNaN(rawYear) && rawYear >= 2000 && rawYear <= 2100
+      ? rawYear
+      : now.getFullYear();
 
   const supabase = await createClient();
   const {

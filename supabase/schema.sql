@@ -93,7 +93,11 @@ CREATE POLICY "Users can delete their own savings goals"
 
 -- Auth trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
 BEGIN
   INSERT INTO public.profiles (id, name, email, avatar_url)
   VALUES (
@@ -105,7 +109,7 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -125,3 +129,38 @@ DROP TRIGGER IF EXISTS on_transaction_updated ON public.transactions;
 CREATE TRIGGER on_transaction_updated
   BEFORE UPDATE ON public.transactions
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Atomic savings deposit function to prevent concurrency lost-updates (P0-1)
+CREATE OR REPLACE FUNCTION public.deposit_to_savings_goal(
+  p_goal_id UUID,
+  p_amount NUMERIC
+)
+RETURNS public.savings_goals
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_goal public.savings_goals;
+BEGIN
+  IF p_amount IS NULL OR p_amount <= 0 THEN
+    RAISE EXCEPTION 'Nominal setoran harus lebih besar dari 0.';
+  END IF;
+
+  UPDATE public.savings_goals
+  SET 
+    current_amount = current_amount + p_amount
+  WHERE id = p_goal_id AND user_id = auth.uid()
+  RETURNING * INTO v_goal;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Target tabungan tidak ditemukan atau akses ditolak.';
+  END IF;
+
+  RETURN v_goal;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.deposit_to_savings_goal(UUID, NUMERIC) TO authenticated;
+
+

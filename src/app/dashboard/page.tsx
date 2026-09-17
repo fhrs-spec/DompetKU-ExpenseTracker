@@ -20,7 +20,7 @@ export default async function DashboardPage() {
 
   const [summary, transactions, chartData, goals] = await Promise.all([
     getMonthlySummary(),
-    getTransactions(),
+    getTransactions({ limit: 5 }),
     getDashboardChartData(),
     getSavingsGoals(),
   ]);

@@ -74,44 +74,77 @@ Format Output JSON:
 }
 `;
 
-  const response = await ai.models.generateContent({
-    model: GEMINI_MODEL,
-    contents: `Instruksi:\n${systemInstruction}\n\nData Keuangan Pengguna:\n${JSON.stringify(promptData, null, 2)}`,
-    config: {
-      responseMimeType: "application/json",
-      temperature: 0.2,
-    },
-  });
+  // Enforce 10-second timeout ceiling (P1-6)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  const responseText = response.text?.trim();
-  if (!responseText) {
-    throw new Error("Gagal menerima analisis finansial dari AI.");
+  try {
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: `Data Keuangan Pengguna:\n${JSON.stringify(promptData, null, 2)}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        temperature: 0.2,
+        maxOutputTokens: 1000,
+        abortSignal: controller.signal,
+      },
+    });
+
+    let responseText = response.text?.trim();
+    if (!responseText) {
+      throw new Error("Gagal menerima analisis finansial dari AI.");
+    }
+
+    // Extract JSON substring if surrounded by markdown code fences or conversational text
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const jsonString = jsonMatch ? jsonMatch[0] : responseText;
+
+    const result = JSON.parse(jsonString) as FinancialHealthAdvice;
+
+    // Validate bounds
+    if (typeof result.healthScore !== "number" || !Number.isFinite(result.healthScore)) {
+      result.healthScore = data.netSavings >= 0 ? 70 : 40;
+    }
+    result.healthScore = Math.max(0, Math.min(100, Math.round(result.healthScore)));
+
+    if (!["Sehat", "Perlu Perhatian", "Kritis"].includes(result.status)) {
+      result.status =
+        result.healthScore >= 75
+          ? "Sehat"
+          : result.healthScore >= 50
+          ? "Perlu Perhatian"
+          : "Kritis";
+    }
+
+    if (!Array.isArray(result.keyFindings) || result.keyFindings.length === 0) {
+      result.keyFindings = ["Pola pengeluaran bulan ini berjalan normal."];
+    } else {
+      result.keyFindings = result.keyFindings.filter(
+        (k) => typeof k === "string" && k.trim().length > 0
+      );
+      if (result.keyFindings.length === 0) {
+        result.keyFindings = ["Pola pengeluaran bulan ini berjalan normal."];
+      }
+    }
+
+    if (!Array.isArray(result.recommendations) || result.recommendations.length === 0) {
+      result.recommendations = ["Pertahankan rasio tabungan positif setiap bulan."];
+    } else {
+      result.recommendations = result.recommendations.filter(
+        (r) => typeof r === "string" && r.trim().length > 0
+      );
+      if (result.recommendations.length === 0) {
+        result.recommendations = ["Pertahankan rasio tabungan positif setiap bulan."];
+      }
+    }
+
+    if (!result.summary || typeof result.summary !== "string") {
+      result.summary = "Analisis kondisi keuangan bulan ini telah berhasil dibuat.";
+    }
+
+    return result;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const result = JSON.parse(responseText) as FinancialHealthAdvice;
-
-  // Validate bounds
-  if (typeof result.healthScore !== "number") {
-    result.healthScore = data.netSavings >= 0 ? 70 : 40;
-  }
-  result.healthScore = Math.max(0, Math.min(100, Math.round(result.healthScore)));
-
-  if (!["Sehat", "Perlu Perhatian", "Kritis"].includes(result.status)) {
-    result.status =
-      result.healthScore >= 75
-        ? "Sehat"
-        : result.healthScore >= 50
-        ? "Perlu Perhatian"
-        : "Kritis";
-  }
-
-  if (!Array.isArray(result.keyFindings) || result.keyFindings.length === 0) {
-    result.keyFindings = ["Pola pengeluaran bulan ini berjalan normal."];
-  }
-
-  if (!Array.isArray(result.recommendations) || result.recommendations.length === 0) {
-    result.recommendations = ["Pertahankan rasio tabungan positif setiap bulan."];
-  }
-
-  return result;
 }
