@@ -1,4 +1,4 @@
-import { getGeminiClient, GEMINI_MODEL } from "./gemini";
+import { generateContentWithFallback } from "./gemini";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/types/database";
 
 export interface ParsedAITransaction {
@@ -19,8 +19,6 @@ export async function parseTransactionWithAI(input: string): Promise<ParsedAITra
     throw new Error("Kalimat transaksi terlalu panjang (maksimal 500 karakter).");
   }
 
-  const ai = getGeminiClient();
-
   // Anchor baseline date to Asia/Jakarta (WIB) timezone to avoid UTC midnight skew (P1-7)
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jakarta",
@@ -37,7 +35,7 @@ Aturan Pemetaan Kategori:
 - Jika tipe "expense", kategori HARUS salah satu dari: ${EXPENSE_CATEGORIES.join(", ")}.
   - Makanan, minuman, kopi, camilan, makan siang, gofood, grabfood -> "Food"
   - Bensin, ojol, grab, gojek, parkir, tol, tiket kereta, busway -> "Transport"
-  - Beli baju, barang, perlengkapan, marketplace, shopee, tokped -> "Shopping"
+  - Beli baju, barang, perlengkapan, marketplace, shopee, tokped, belanja -> "Shopping"
   - Listrik, air, wifi, internet, pulsa, kos, kontrakan, cicilan -> "Bills"
   - Bioskop, game, liburan, karaoke, rekreasi -> "Entertainment"
   - Obat, dokter, vitamin, klinik, rumah sakit -> "Health"
@@ -51,7 +49,7 @@ Aturan Pemetaan Kategori:
   - Jika tidak ada yang cocok -> "Other"
 
 Aturan Nominal:
-- Pahami istilah angka: "50rb" / "50k" / "50 ribu" = 50000, "1.5jt" / "1,5 juta" = 1500000, dsb.
+- Pahami istilah angka: "50rb" / "50k" / "50 ribu" = 50000, "1.5jt" / "1,5 juta" / "5jt" / "5 jt" = 5000000, dsb.
 - Nominal HARUS berupa bilangan bulat positif tanpa simbol mata uang.
 
 Aturan Tanggal:
@@ -78,28 +76,28 @@ Format Output JSON murni:
   const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
+    const rawResponse = await generateContentWithFallback({
       contents: `Teks transaksi yang akan diekstrak:\n"""\n${escapedInput}\n"""`,
-      config: {
-        systemInstruction, // Native SDK parameter separation (P0-3)
-        responseMimeType: "application/json",
-        temperature: 0.1,
-        maxOutputTokens: 300, // Token budget ceiling (P1-6)
-        abortSignal: controller.signal,
-      },
+      systemInstruction,
+      maxOutputTokens: 1024,
+      temperature: 0.1,
+      abortSignal: controller.signal,
     });
 
-    let responseText = response.text?.trim();
-    if (!responseText) {
-      throw new Error("Gagal menerima respon dari AI.");
+    let cleaned = rawResponse.trim();
+    if (cleaned.startsWith("```")) {
+      cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
     }
 
-    // Extract JSON substring if surrounded by markdown code fences or conversational text
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    const jsonString = jsonMatch ? jsonMatch[0] : responseText;
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    const jsonString = jsonMatch ? jsonMatch[0] : cleaned;
 
-    const parsed = JSON.parse(jsonString) as ParsedAITransaction;
+    let parsed: ParsedAITransaction;
+    try {
+      parsed = JSON.parse(jsonString) as ParsedAITransaction;
+    } catch {
+      throw new Error("AI mengembalikan format yang tidak dapat dibaca. Silakan ulangi dengan kalimat yang lebih spesifik.");
+    }
 
     if (
       !parsed.title ||

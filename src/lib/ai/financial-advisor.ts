@@ -1,4 +1,4 @@
-import { getGeminiClient, GEMINI_MODEL } from "./gemini";
+import { generateContentWithFallback } from "./gemini";
 
 export interface FinancialHealthAdvice {
   healthScore: number;
@@ -25,8 +25,6 @@ export interface FinancialHealthInput {
 export async function generateFinancialHealthAdvice(
   data: FinancialHealthInput
 ): Promise<FinancialHealthAdvice> {
-  const ai = getGeminiClient();
-
   const promptData = {
     periode: data.periodLabel,
     totalSaldo: data.totalBalance,
@@ -79,22 +77,13 @@ Format Output JSON:
   const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
+    const responseText = await generateContentWithFallback({
       contents: `Data Keuangan Pengguna:\n${JSON.stringify(promptData, null, 2)}`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        temperature: 0.2,
-        maxOutputTokens: 1000,
-        abortSignal: controller.signal,
-      },
+      systemInstruction,
+      maxOutputTokens: 1500,
+      temperature: 0.2,
+      abortSignal: controller.signal,
     });
-
-    let responseText = response.text?.trim();
-    if (!responseText) {
-      throw new Error("Gagal menerima analisis finansial dari AI.");
-    }
 
     // Extract JSON substring if surrounded by markdown code fences or conversational text
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
