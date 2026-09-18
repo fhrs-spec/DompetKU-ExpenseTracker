@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Crown } from "lucide-react";
 import { toast } from "sonner";
-import { parseTransactionAction } from "@/app/actions/ai";
+import { parseTransactionAction, getUserAIQuotaAction } from "@/app/actions/ai";
 import { ParsedAITransaction } from "@/lib/ai/parse-transaction";
 import { Button } from "@/components/ui/button";
 
@@ -23,6 +23,13 @@ const SAMPLE_PROMPTS = [
 export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
   const [prompt, setPrompt] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [quotaInfo, setQuotaInfo] = React.useState<{ isOwner: boolean } | null>(null);
+
+  React.useEffect(() => {
+    getUserAIQuotaAction()
+      .then((data) => setQuotaInfo(data))
+      .catch(() => {});
+  }, []);
 
   const handleAction = async (textOverride?: string) => {
     const text = textOverride || prompt;
@@ -71,9 +78,16 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
           <Sparkles className="h-3.5 w-3.5" />
           <span>Catat Cepat dengan AI</span>
         </div>
-        <span className="text-[10px] text-muted-foreground">
-          Gemini Flash
-        </span>
+        {quotaInfo?.isOwner ? (
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+            <Crown className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+            Unlimited (Owner)
+          </span>
+        ) : (
+          <span className="text-[10px] text-muted-foreground">
+            Gemini Flash
+          </span>
+        )}
       </div>
 
       {/* Integrated search-bar style input */}

@@ -10,10 +10,12 @@ import {
   PieChart,
   Target,
   LogOut,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
+import { isAppOwner } from "@/lib/auth/admin";
 
 const NAV_ITEMS = [
   {
@@ -91,10 +93,18 @@ export function AppSidebar({ userEmail, userName }: AppSidebarProps) {
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
             {(userName?.[0] || userEmail?.[0] || "U").toUpperCase()}
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-semibold text-foreground truncate">
-              {userName || "Pengguna"}
-            </p>
+          <div className="overflow-hidden flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {userName || "Pengguna"}
+              </p>
+              {isAppOwner(userEmail) && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0 shadow-soft">
+                  <Crown className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
+                  Owner
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground truncate">
               {userEmail || ""}
             </p>

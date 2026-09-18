@@ -7,6 +7,8 @@ import {
   FinancialHealthAdvice,
 } from "@/lib/ai/financial-advisor";
 import { getAnalyticsData } from "@/lib/db/analytics";
+import { checkAIRateLimit, DAILY_LIMITS } from "@/lib/ai/rate-limiter";
+import { isAppOwner } from "@/lib/auth/admin";
 
 export interface AIActionResponse<T> {
   success: boolean;
@@ -29,6 +31,12 @@ export async function parseTransactionAction(
 
     if (!user) {
       return { success: false, error: "Silakan login terlebih dahulu." };
+    }
+
+    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com)
+    const rateCheck = checkAIRateLimit(user.id, user.email, "parse");
+    if (!rateCheck.allowed) {
+      return { success: false, error: rateCheck.error };
     }
 
     const parsed = await parseTransactionWithAI(input);
@@ -66,6 +74,12 @@ export async function getFinancialHealthCheckAction(
 
     if (!user) {
       return { success: false, error: "Silakan login terlebih dahulu." };
+    }
+
+    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com)
+    const rateCheck = checkAIRateLimit(user.id, user.email, "health_audit");
+    if (!rateCheck.allowed) {
+      return { success: false, error: rateCheck.error };
     }
 
     const now = new Date();
@@ -113,4 +127,28 @@ export async function getFinancialHealthCheckAction(
         : "Gagal menghasilkan analisis finansial AI. Silakan coba lagi.",
     };
   }
+}
+
+export async function getUserAIQuotaAction(): Promise<{
+  isOwner: boolean;
+  email?: string;
+  parseLimit: number;
+  auditLimit: number;
+}> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { isOwner: false, parseLimit: 0, auditLimit: 0 };
+  }
+
+  const isOwner = isAppOwner(user.email);
+  return {
+    isOwner,
+    email: user.email,
+    parseLimit: isOwner ? 999999 : DAILY_LIMITS.parse,
+    auditLimit: isOwner ? 999999 : DAILY_LIMITS.health_audit,
+  };
 }

@@ -10,11 +10,13 @@ import {
   Lightbulb,
   ArrowRight,
   Zap,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   getFinancialHealthCheckAction,
+  getUserAIQuotaAction,
 } from "@/app/actions/ai";
 import { FinancialHealthAdvice } from "@/lib/ai/financial-advisor";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,13 @@ export function AiAdvisorCard({ year, month, periodLabel }: AiAdvisorCardProps) 
   const [advice, setAdvice] = React.useState<FinancialHealthAdvice | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [quotaInfo, setQuotaInfo] = React.useState<{ isOwner: boolean } | null>(null);
+
+  React.useEffect(() => {
+    getUserAIQuotaAction()
+      .then((data) => setQuotaInfo(data))
+      .catch(() => {});
+  }, []);
 
   const cacheKey = `dompetku_ai_audit_${year}_${month}`;
 
@@ -117,6 +126,11 @@ export function AiAdvisorCard({ year, month, periodLabel }: AiAdvisorCardProps) 
               <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                 <Zap className="h-3 w-3" /> Gemini
               </span>
+              {quotaInfo?.isOwner && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 text-[11px] font-semibold">
+                  <Crown className="h-3 w-3 fill-amber-500 text-amber-500" /> Owner (Unlimited)
+                </span>
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Evaluasi arus kas otomatis dan rekomendasi finansial taktis untuk {periodLabel}.

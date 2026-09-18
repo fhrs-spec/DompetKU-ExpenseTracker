@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, Plus, Menu, X, LogOut } from "lucide-react";
+import { Wallet, Plus, Menu, X, LogOut, Crown } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/app/auth/actions";
 import { cn } from "@/lib/utils";
+import { isAppOwner } from "@/lib/auth/admin";
 
 interface AppHeaderProps {
   userName?: string;
@@ -85,7 +86,15 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
           />
           <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-card p-4 shadow-xl md:hidden">
             <div className="mb-4 pb-3 border-b border-border">
-              <p className="text-sm font-semibold text-foreground">{userName || "Pengguna"}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-foreground">{userName || "Pengguna"}</p>
+                {isAppOwner(userEmail) && (
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                    <Crown className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
+                    Owner
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">{userEmail || ""}</p>
             </div>
 
