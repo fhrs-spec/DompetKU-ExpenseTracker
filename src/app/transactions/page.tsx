@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Receipt, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTransactions, TransactionFilterOptions, getMonthlySummary } from "@/lib/db/transactions";
 import { AppLayout } from "@/components/layout/app-layout";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { ExportPdfButton } from "@/components/export-pdf-button";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
 interface PageProps {
   searchParams: Promise<{
@@ -74,7 +76,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       userName={userName}
       userEmail={user?.email}
     >
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -95,6 +97,66 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
               </Button>
             </Link>
           </div>
+        </div>
+
+        {/* 3 Summary Metrics matching Goals & Analytics scale */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-6">
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Total Transaksi
+              </span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Receipt className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <h3 className="text-xl sm:text-2xl font-extrabold font-mono text-foreground tracking-tight break-all sm:break-normal">
+                {transactions.length}
+              </h3>
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+                Catatan transaksi aktif
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Total Pemasukan
+              </span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <ArrowUpRight className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <h3 className="text-xl sm:text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 tracking-tight break-all sm:break-normal">
+                +{formatCurrency(txIncome)}
+              </h3>
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+                Penerimaan dalam filter
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Total Pengeluaran
+              </span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                <ArrowDownLeft className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <h3 className="text-xl sm:text-2xl font-extrabold font-mono text-destructive tracking-tight break-all sm:break-normal">
+                -{formatCurrency(txExpense)}
+              </h3>
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+                Pengeluaran dalam filter
+              </p>
+            </div>
+          </Card>
         </div>
 
         {/* Interactive List and Filter Component */}

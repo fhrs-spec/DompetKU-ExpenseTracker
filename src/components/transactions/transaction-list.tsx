@@ -146,9 +146,9 @@ export function TransactionList({ transactions }: TransactionListProps) {
     <div className="space-y-6">
       {/* Filter and Search Bar */}
       <Card className="p-4 sm:p-5">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 sm:gap-3.5">
           {/* Search Input */}
-          <div className="md:col-span-4 relative">
+          <div className="sm:col-span-2 md:col-span-4 relative">
             <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder="Cari transaksi..."
@@ -160,7 +160,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </div>
 
           {/* Type Filter */}
-          <div className="md:col-span-2">
+          <div className="col-span-1 md:col-span-2">
             <select
               value={selectedType}
               onChange={(e) => {
@@ -176,7 +176,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </div>
 
           {/* Category Filter */}
-          <div className="md:col-span-2">
+          <div className="col-span-1 md:col-span-2">
             <select
               value={selectedCategory}
               onChange={(e) => {
@@ -195,28 +195,30 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </div>
 
           {/* Date Range */}
-          <div className="md:col-span-4 flex items-center gap-2">
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                applyFilters({ startDate: e.target.value });
-              }}
-              className="text-xs sm:text-sm"
-              placeholder="Dari"
-            />
-            <span className="text-muted-foreground text-xs">-</span>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                applyFilters({ endDate: e.target.value });
-              }}
-              className="text-xs sm:text-sm"
-              placeholder="Sampai"
-            />
+          <div className="sm:col-span-2 md:col-span-4 flex items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  applyFilters({ startDate: e.target.value });
+                }}
+                className="w-full text-xs sm:text-sm"
+              />
+            </div>
+            <span className="text-muted-foreground text-xs font-bold">-</span>
+            <div className="relative flex-1">
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  applyFilters({ endDate: e.target.value });
+                }}
+                className="w-full text-xs sm:text-sm"
+              />
+            </div>
 
             {hasActiveFilters && (
               <Button
@@ -224,7 +226,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 size="icon"
                 onClick={handleResetFilters}
                 title="Reset filter"
-                className="shrink-0"
+                className="h-10 w-10 sm:h-9 sm:w-9 shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -267,83 +269,85 @@ export function TransactionList({ transactions }: TransactionListProps) {
             return (
               <Card
                 key={t.id}
-                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/30 transition-all"
+                className="p-3.5 sm:p-4.5 transition-all hover:border-primary/30"
               >
-                {/* Left: Icon, Title, Date, Category */}
-                <div className="flex items-start sm:items-center gap-3.5">
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                      isIncome
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                        : "bg-destructive/10 text-destructive"
-                    }`}
-                  >
-                    {isIncome ? (
-                      <ArrowUpRight className="h-5 w-5" />
-                    ) : (
-                      <ArrowDownLeft className="h-5 w-5" />
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-semibold text-foreground text-sm sm:text-base">
-                        {t.title}
-                      </h4>
-                      <Badge
-                        variant={isIncome ? "success" : "secondary"}
-                        className="text-[11px]"
-                      >
-                        {t.category}
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{formatDate(t.transaction_date)}</span>
-                      {t.note && (
-                        <>
-                          <span>•</span>
-                          <span className="italic truncate max-w-xs">{t.note}</span>
-                        </>
+                <div className="flex items-center justify-between gap-3">
+                  {/* Left: Icon, Title, Date, Category */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl ${
+                        isIncome
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "bg-destructive/10 text-destructive"
+                      }`}
+                    >
+                      {isIncome ? (
+                        <ArrowUpRight className="h-5 w-5" />
+                      ) : (
+                        <ArrowDownLeft className="h-5 w-5" />
                       )}
                     </div>
+
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-foreground text-sm sm:text-base truncate max-w-[140px] xs:max-w-[200px] sm:max-w-md">
+                          {t.title}
+                        </h4>
+                        <Badge
+                          variant={isIncome ? "success" : "secondary"}
+                          className="text-[10px] sm:text-[11px] py-0 shrink-0"
+                        >
+                          {t.category}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                        <Calendar className="h-3 w-3 shrink-0" />
+                        <span>{formatDate(t.transaction_date)}</span>
+                        {t.note && (
+                          <>
+                            <span>•</span>
+                            <span className="italic truncate">{t.note}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Right: Nominal & Actions */}
-                <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-                  <span
-                    className={`text-base sm:text-lg font-bold font-mono ${
-                      isIncome
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-destructive"
-                    }`}
-                  >
-                    {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
-                  </span>
+                  {/* Right: Nominal & Actions */}
+                  <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                    <span
+                      className={`text-sm sm:text-base font-bold font-mono tracking-tight ${
+                        isIncome
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-destructive"
+                      }`}
+                    >
+                      {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
+                    </span>
 
-                  <div className="flex items-center gap-1.5">
-                    <Link href={`/transactions/${t.id}/edit`}>
+                    <div className="flex items-center gap-0.5 sm:gap-1">
+                      <Link href={`/transactions/${t.id}/edit`}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground active:scale-95"
+                          title="Edit transaksi"
+                        >
+                          <Edit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </Button>
+                      </Link>
+
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground active:scale-95"
-                        title="Edit transaksi"
+                        onClick={() => setDeletingId(t.id)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive active:scale-95"
+                        title="Hapus transaksi"
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
-                    </Link>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeletingId(t.id)}
-                      className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive active:scale-95"
-                      title="Hapus transaksi"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </div>
                   </div>
                 </div>
               </Card>
