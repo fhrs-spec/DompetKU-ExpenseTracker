@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { parseTransactionWithAI, ParsedAITransaction } from "@/lib/ai/parse-transaction";
+import { parseReceiptWithAI } from "@/lib/ai/parse-receipt";
 import {
   generateFinancialHealthAdvice,
   FinancialHealthAdvice,
@@ -129,10 +130,58 @@ export async function getFinancialHealthCheckAction(
   }
 }
 
+export async function parseReceiptAction(
+  imageBase64: string,
+  mimeType?: string
+): Promise<AIActionResponse<ParsedAITransaction>> {
+  if (!imageBase64 || imageBase64.trim().length === 0) {
+    return { success: false, error: "Gambar struk belanja tidak boleh kosong." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Silakan login terlebih dahulu." };
+    }
+
+    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com)
+    const rateCheck = checkAIRateLimit(user.id, user.email, "scan_receipt");
+    if (!rateCheck.allowed) {
+      return { success: false, error: rateCheck.error };
+    }
+
+    const parsed = await parseReceiptWithAI({ imageBase64, mimeType });
+    return { success: true, data: parsed };
+  } catch (err) {
+    console.error("AI Parse Receipt Error:", err);
+    const isTimeout =
+      err instanceof Error &&
+      (err.name === "AbortError" || err.message.toLowerCase().includes("aborted"));
+    const isQuota =
+      err instanceof Error &&
+      (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED"));
+    return {
+      success: false,
+      error: isTimeout
+        ? "Pemindaian struk melebihi batas waktu (timeout 15 detik). Pastikan koneksi internet stabil dan coba lagi."
+        : isQuota
+        ? "Layanan AI sedang sibuk atau kuota tercapai. Silakan coba beberapa saat lagi."
+        : err instanceof Error
+        ? err.message
+        : "Gagal memindai struk belanja dengan AI. Silakan coba lagi.",
+    };
+  }
+}
+
 export async function getUserAIQuotaAction(): Promise<{
   isOwner: boolean;
   email?: string;
   parseLimit: number;
+  scanLimit: number;
   auditLimit: number;
 }> {
   const supabase = await createClient();
@@ -141,7 +190,7 @@ export async function getUserAIQuotaAction(): Promise<{
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { isOwner: false, parseLimit: 0, auditLimit: 0 };
+    return { isOwner: false, parseLimit: 0, scanLimit: 0, auditLimit: 0 };
   }
 
   const isOwner = isAppOwner(user.email);
@@ -149,6 +198,7 @@ export async function getUserAIQuotaAction(): Promise<{
     isOwner,
     email: user.email,
     parseLimit: isOwner ? 999999 : DAILY_LIMITS.parse,
+    scanLimit: isOwner ? 999999 : DAILY_LIMITS.scan_receipt,
     auditLimit: isOwner ? 999999 : DAILY_LIMITS.health_audit,
   };
 }

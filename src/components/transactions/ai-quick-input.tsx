@@ -1,11 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Loader2, Crown } from "lucide-react";
+import { Sparkles, Loader2, Crown, Camera, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { parseTransactionAction, getUserAIQuotaAction } from "@/app/actions/ai";
+import {
+  parseTransactionAction,
+  parseReceiptAction,
+  getUserAIQuotaAction,
+} from "@/app/actions/ai";
 import { ParsedAITransaction } from "@/lib/ai/parse-transaction";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
 
 interface AiQuickInputProps {
   onParsed: (data: ParsedAITransaction) => void;
@@ -20,10 +25,64 @@ const SAMPLE_PROMPTS = [
   "Bayar tagihan listrik 180rb",
 ];
 
+/**
+ * Compresses an image file client-side using an HTML5 Canvas.
+ * Resizes max dimension to 1280px and converts to JPEG at 0.82 quality.
+ * Shrinks 5-15MB mobile photos to ~150-350KB in under 100ms for instant AI OCR.
+ */
+async function compressImageFile(file: File): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Format file gambar tidak valid atau rusak."));
+      img.onload = () => {
+        try {
+          const MAX_DIM = 1280;
+          let { width, height } = img;
+
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas context 2D tidak tersedia di browser."));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+          const base64 = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
+
+          resolve({ base64, mimeType: "image/jpeg" });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
   const [prompt, setPrompt] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isScanning, setIsScanning] = React.useState(false);
   const [quotaInfo, setQuotaInfo] = React.useState<{ isOwner: boolean } | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
     getUserAIQuotaAction()
@@ -51,11 +110,10 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
         return;
       }
 
-      // Enforce human-in-the-loop review for all parsed entries to prevent unreviewed prompt injection DB commits (P0-3)
       onParsed(res.data);
       setPrompt("");
       toast.success(
-        `Data "${res.data.title}" berhasil diekstrak! Tinjau dan klik "Simpan Transaksi" untuk memasukkan ke database.`
+        `Data "${res.data.title}" berhasil diekstrak! Tinjau dan klik "Simpan Transaksi".`
       );
     } catch {
       toast.error("Terjadi kendala saat menghubungkan ke AI.");
@@ -64,15 +122,69 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so the user can select the same file again if needed
+    e.target.value = "";
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("File yang dipilih harus berupa foto/gambar (JPG, PNG, WebP).");
+      return;
+    }
+
+    setIsScanning(true);
+    const toastId = toast.loading("Mengompres & memindai struk dengan Gemini AI...");
+
+    try {
+      const { base64, mimeType } = await compressImageFile(file);
+
+      const res = await parseReceiptAction(base64, mimeType);
+      if (!res.success || !res.data) {
+        toast.error(res.error || "Gagal memindai struk belanja.", { id: toastId });
+        return;
+      }
+
+      onParsed(res.data);
+      toast.success(
+        `Struk "${res.data.title}" berhasil dipindai (${formatCurrency(
+          res.data.amount
+        )})! Periksa dan simpan transaksi.`,
+        { id: toastId, duration: 4000 }
+      );
+    } catch (err) {
+      console.error("Receipt Scan Error:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Terjadi kendala saat memindai struk belanja.",
+        { id: toastId }
+      );
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !isLoading) {
+    if (e.key === "Enter" && !isLoading && !isScanning) {
       e.preventDefault();
       handleAction();
     }
   };
 
+  const isBusy = isLoading || isScanning;
+
   return (
-    <div className="rounded-xl sm:rounded-2xl border border-primary/20 bg-primary/[0.03] dark:bg-primary/[0.05] p-2.5 sm:p-3.5 space-y-2 transition-colors">
+    <div className="rounded-xl sm:rounded-2xl border border-primary/20 bg-primary/[0.03] dark:bg-primary/[0.05] p-2.5 sm:p-3.5 space-y-2.5 transition-colors">
+      {/* Hidden File Input for Receipt Photo / Camera */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+        disabled={disabled || isBusy}
+      />
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
           <Sparkles className="h-3.5 w-3.5" />
@@ -90,24 +202,51 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
         )}
       </div>
 
-      {/* Integrated search-bar style input */}
+      {/* Scanning status banner */}
+      {isScanning && (
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium animate-pulse">
+          <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+          <span>Sedang memindai struk belanja dengan Gemini AI...</span>
+        </div>
+      )}
+
+      {/* Integrated search-bar style input with camera trigger */}
       <div className="relative flex items-center">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isBusy}
+          className="absolute left-2.5 flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer disabled:opacity-50"
+          title="Foto struk langsung dari kamera atau pilih dari galeri"
+          aria-label="Scan struk belanja dengan kamera"
+        >
+          {isScanning ? (
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          ) : (
+            <Camera className="h-4 w-4" />
+          )}
+        </button>
+
         <input
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={disabled || isLoading}
+          disabled={disabled || isBusy}
           aria-label="Kalimat transaksi untuk AI"
-          placeholder="Cth: Beli kopi kenangan 22rb tadi siang..."
-          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-3 pr-24 sm:pr-28 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
+          placeholder={
+            isScanning
+              ? "Memproses foto struk..."
+              : "Ketik transaksi atau tap kamera untuk scan struk..."
+          }
+          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-9.5 pr-22 sm:pr-26 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
         />
 
         <div className="absolute right-1 flex items-center">
           <Button
             type="button"
             onClick={() => handleAction()}
-            disabled={disabled || isLoading || !prompt.trim()}
+            disabled={disabled || isBusy || !prompt.trim()}
             size="sm"
             className="h-7 sm:h-8 px-2.5 text-[11px] sm:text-xs gap-1 shadow-soft bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md sm:rounded-lg"
             title="Ekstrak data transaksi dengan AI ke formulir untuk ditinjau"
@@ -127,8 +266,24 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
         </div>
       </div>
 
-      {/* Swipeable quick sample chips in a single horizontal row */}
+      {/* Quick Action Chips & Sample Prompts */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-0.5 px-0.5 scroll-smooth">
+        {/* Prominent Scan Struk Chip */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isBusy}
+          className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium whitespace-nowrap shrink-0 rounded-md sm:rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary px-2 py-0.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+          title="Ambil foto atau upload struk belanja"
+        >
+          {isScanning ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Camera className="h-3 w-3" />
+          )}
+          <span>Scan Struk</span>
+        </button>
+
         <span className="text-[10px] sm:text-[11px] text-muted-foreground shrink-0 font-medium">Contoh:</span>
         {SAMPLE_PROMPTS.map((sample, idx) => (
           <button
@@ -138,8 +293,8 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
               setPrompt(sample);
               handleAction(sample);
             }}
-            disabled={disabled || isLoading}
-            className="text-[10px] sm:text-[11px] whitespace-nowrap shrink-0 rounded-md sm:rounded-lg border border-border/80 bg-card hover:bg-muted/80 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95"
+            disabled={disabled || isBusy}
+            className="text-[10px] sm:text-[11px] whitespace-nowrap shrink-0 rounded-md sm:rounded-lg border border-border/80 bg-card hover:bg-muted/80 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 disabled:opacity-50"
           >
             &ldquo;{sample}&rdquo;
           </button>

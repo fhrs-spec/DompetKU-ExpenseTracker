@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, type ContentListUnion } from "@google/genai";
 
 let geminiInstance: GoogleGenAI | null = null;
 
@@ -19,7 +19,7 @@ export function getGeminiClient(): GoogleGenAI {
 }
 
 export interface GenerateWithFallbackParams {
-  contents: string;
+  contents: ContentListUnion;
   systemInstruction: string;
   maxOutputTokens?: number;
   temperature?: number;

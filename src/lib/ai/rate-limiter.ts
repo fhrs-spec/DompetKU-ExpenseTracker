@@ -1,6 +1,6 @@
 import { isAppOwner } from "@/lib/auth/admin";
 
-export type AIActionType = "parse" | "health_audit";
+export type AIActionType = "parse" | "health_audit" | "scan_receipt";
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -12,6 +12,7 @@ export interface RateLimitResult {
 
 export const DAILY_LIMITS: Record<AIActionType, number> = {
   parse: 15,
+  scan_receipt: 10,
   health_audit: 3,
 };
 
@@ -57,6 +58,8 @@ export function checkAIRateLimit(
     const actionLabel =
       action === "parse"
         ? "pencatatan transaksi AI"
+        : action === "scan_receipt"
+        ? "pemindaian struk belanja AI"
         : "audit kesehatan keuangan AI";
 
     return {
