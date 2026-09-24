@@ -86,7 +86,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <ExportPdfButton reportData={reportData} />
             <Link href="/transactions/add">
               <Button className="gap-2 shadow-soft">

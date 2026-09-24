@@ -130,7 +130,7 @@ export function DepositModal({ goal, onClose }: DepositModalProps) {
                 key={preset}
                 type="button"
                 onClick={() => setValue("amount", preset)}
-                className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-muted text-xs font-mono font-medium text-foreground transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs sm:text-sm font-mono font-medium text-foreground transition-all active:scale-95 min-h-[36px] flex items-center justify-center cursor-pointer"
               >
                 +{formatCurrency(preset)}
               </button>

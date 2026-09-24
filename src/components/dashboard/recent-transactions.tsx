@@ -38,9 +38,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
               const isIncome = t.type === "income";
 
               return (
-                <div
+                <Link
                   key={t.id}
-                  className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
+                  href="/transactions"
+                  className="flex items-center justify-between py-2.5 sm:py-3 px-2 rounded-xl hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer -mx-2"
+                  title="Lihat di riwayat transaksi"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -59,7 +61,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
 
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-foreground truncate max-w-[150px] sm:max-w-xs">
+                        <p className="text-sm font-semibold text-foreground truncate max-w-[130px] xs:max-w-[180px] sm:max-w-xs">
                           {t.title}
                         </p>
                         <Badge
@@ -76,7 +78,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   </div>
 
                   <span
-                    className={`text-sm font-bold font-mono ${
+                    className={`text-xs sm:text-sm font-bold font-mono ${
                       isIncome
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-destructive"
@@ -84,7 +86,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   >
                     {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
                   </span>
-                </div>
+                </Link>
               );
             })}
           </div>

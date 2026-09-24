@@ -216,7 +216,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isBusy}
-          className="absolute left-2.5 flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer disabled:opacity-50"
+          className="absolute left-1.5 flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
           title="Foto struk langsung dari kamera atau pilih dari galeri"
           aria-label="Scan struk belanja dengan kamera"
         >
@@ -239,7 +239,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
               ? "Memproses foto struk..."
               : "Ketik transaksi atau tap kamera untuk scan struk..."
           }
-          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-9.5 pr-22 sm:pr-26 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
+          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-11 pr-22 sm:pr-26 py-2.5 sm:py-2 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
         />
 
         <div className="absolute right-1 flex items-center">
@@ -248,7 +248,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
             onClick={() => handleAction()}
             disabled={disabled || isBusy || !prompt.trim()}
             size="sm"
-            className="h-7 sm:h-8 px-2.5 text-[11px] sm:text-xs gap-1 shadow-soft bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md sm:rounded-lg"
+            className="h-8 sm:h-8 px-2.5 sm:px-3 text-xs gap-1 shadow-soft bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md sm:rounded-lg"
             title="Ekstrak data transaksi dengan AI ke formulir untuk ditinjau"
           >
             {isLoading ? (
@@ -267,24 +267,24 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
       </div>
 
       {/* Quick Action Chips & Sample Prompts */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-0.5 px-0.5 scroll-smooth">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-0.5 px-0.5 scroll-smooth">
         {/* Prominent Scan Struk Chip */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isBusy}
-          className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium whitespace-nowrap shrink-0 rounded-md sm:rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary px-2 py-0.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap shrink-0 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 min-h-[32px]"
           title="Ambil foto atau upload struk belanja"
         >
           {isScanning ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Camera className="h-3 w-3" />
+            <Camera className="h-3.5 w-3.5" />
           )}
           <span>Scan Struk</span>
         </button>
 
-        <span className="text-[10px] sm:text-[11px] text-muted-foreground shrink-0 font-medium">Contoh:</span>
+        <span className="text-xs text-muted-foreground shrink-0 font-medium">Contoh:</span>
         {SAMPLE_PROMPTS.map((sample, idx) => (
           <button
             key={idx}
@@ -294,7 +294,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
               handleAction(sample);
             }}
             disabled={disabled || isBusy}
-            className="text-[10px] sm:text-[11px] whitespace-nowrap shrink-0 rounded-md sm:rounded-lg border border-border/80 bg-card hover:bg-muted/80 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="text-xs whitespace-nowrap shrink-0 rounded-lg border border-border/80 bg-card hover:bg-muted/80 px-2.5 py-1.5 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 disabled:opacity-50 min-h-[32px] flex items-center"
           >
             &ldquo;{sample}&rdquo;
           </button>

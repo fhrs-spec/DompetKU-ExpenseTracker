@@ -58,8 +58,8 @@ export function SavingsGoalsClient({ initialGoals }: SavingsGoalsClientProps) {
       </div>
 
       {/* Summary Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-6">
+        <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Total Dana Impian
@@ -69,16 +69,16 @@ export function SavingsGoalsClient({ initialGoals }: SavingsGoalsClientProps) {
             </div>
           </div>
           <div className="mt-3">
-            <h3 className="text-2xl font-extrabold font-mono text-foreground">
+            <h3 className="text-xl sm:text-2xl font-extrabold font-mono text-foreground tracking-tight break-all sm:break-normal">
               {formatCurrency(totalTarget)}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
               Dari {initialGoals.length} target tabungan
             </p>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Terkumpul Saat Ini
@@ -88,16 +88,16 @@ export function SavingsGoalsClient({ initialGoals }: SavingsGoalsClientProps) {
             </div>
           </div>
           <div className="mt-3">
-            <h3 className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400">
+            <h3 className="text-xl sm:text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 tracking-tight break-all sm:break-normal">
               {formatCurrency(totalCurrent)}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
               {overallPercentage}% dari total target
             </p>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Target Tercapai
@@ -107,10 +107,10 @@ export function SavingsGoalsClient({ initialGoals }: SavingsGoalsClientProps) {
             </div>
           </div>
           <div className="mt-3">
-            <h3 className="text-2xl font-extrabold font-mono text-foreground">
+            <h3 className="text-xl sm:text-2xl font-extrabold font-mono text-foreground tracking-tight break-all sm:break-normal">
               {completedCount} / {initialGoals.length}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
               Target yang telah terpenuhi
             </p>
           </div>

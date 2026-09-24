@@ -265,7 +265,7 @@ export function TransactionForm({
           </Label>
           <select
             id="category"
-            className="flex h-11 w-full rounded-xl border border-border bg-card px-3.5 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors"
+            className="flex h-11 w-full rounded-xl border border-border bg-card px-3.5 py-2 text-base sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors"
             disabled={isLoading}
             {...register("category")}
           >
@@ -313,7 +313,7 @@ export function TransactionForm({
           id="note"
           rows={2}
           placeholder="Tulis catatan jika diperlukan..."
-          className="flex w-full rounded-xl border border-border bg-card px-3.5 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors disabled:opacity-50"
+          className="flex w-full rounded-xl border border-border bg-card px-3.5 py-2 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors disabled:opacity-50"
           disabled={isLoading}
           {...register("note")}
         />

@@ -167,7 +167,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 setSelectedType(e.target.value);
                 applyFilters({ type: e.target.value });
               }}
-              className="flex h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-base sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">Semua Tipe</option>
               <option value="expense">Pengeluaran</option>
@@ -183,7 +183,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 setSelectedCategory(e.target.value);
                 applyFilters({ category: e.target.value });
               }}
-              className="flex h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-base sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">Semua Kategori</option>
               {allCategories.map((cat) => (
@@ -323,12 +323,12 @@ export function TransactionList({ transactions }: TransactionListProps) {
                     {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
                   </span>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <Link href={`/transactions/${t.id}/edit`}>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground active:scale-95"
                         title="Edit transaksi"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -339,7 +339,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setDeletingId(t.id)}
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive active:scale-95"
                       title="Hapus transaksi"
                     >
                       <Trash2 className="h-4 w-4" />

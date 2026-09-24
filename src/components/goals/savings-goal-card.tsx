@@ -84,11 +84,11 @@ export function SavingsGoalCard({
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground active:scale-95"
                 onClick={() => onEdit(goal)}
                 title="Edit target"
               >
@@ -97,7 +97,7 @@ export function SavingsGoalCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive active:scale-95"
                 onClick={() => setDeleteModalOpen(true)}
                 title="Hapus target"
               >
