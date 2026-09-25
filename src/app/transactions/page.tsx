@@ -90,7 +90,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <ExportPdfButton reportData={reportData} />
-            <Link href="/transactions/add">
+            <Link href="/transactions/add" className="hidden sm:inline-flex">
               <Button className="gap-2 shadow-soft">
                 <Plus className="h-4 w-4" />
                 Catat Transaksi
@@ -99,9 +99,9 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* 3 Summary Metrics matching Dashboard & Analytics scale */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-          <Card className="p-3.5 sm:p-5 transition-all hover:border-primary/40">
+        {/* 3 Summary Metrics: swipeable horizontal scroll on mobile, 3-col grid on sm+ */}
+        <div className="flex sm:grid overflow-x-auto sm:overflow-visible grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
+          <Card className="min-w-[220px] xs:min-w-[240px] sm:min-w-0 flex-1 shrink-0 snap-start p-3.5 sm:p-5 transition-all hover:border-primary/40">
             <div className="flex items-center justify-between">
               <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Total Transaksi
@@ -120,7 +120,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           </Card>
 
-          <Card className="p-3.5 sm:p-5 transition-all hover:border-emerald-500/40">
+          <Card className="min-w-[220px] xs:min-w-[240px] sm:min-w-0 flex-1 shrink-0 snap-start p-3.5 sm:p-5 transition-all hover:border-emerald-500/40">
             <div className="flex items-center justify-between">
               <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Total Pemasukan
@@ -139,7 +139,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           </Card>
 
-          <Card className="p-3.5 sm:p-5 transition-all hover:border-destructive/40">
+          <Card className="min-w-[220px] xs:min-w-[240px] sm:min-w-0 flex-1 shrink-0 snap-start p-3.5 sm:p-5 transition-all hover:border-destructive/40">
             <div className="flex items-center justify-between">
               <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                 Total Pengeluaran

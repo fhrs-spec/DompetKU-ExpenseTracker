@@ -195,8 +195,8 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </div>
 
           {/* Date Range */}
-          <div className="col-span-2 md:col-span-4 flex items-center gap-2">
-            <div className="relative flex-1">
+          <div className="col-span-2 md:col-span-4 flex items-center gap-2 min-w-0">
+            <div className="relative flex-1 min-w-0">
               <Input
                 type="date"
                 value={startDate}
@@ -204,11 +204,11 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   setStartDate(e.target.value);
                   applyFilters({ startDate: e.target.value });
                 }}
-                className="w-full h-10 text-xs sm:text-sm"
+                className="w-full h-10 text-xs sm:text-sm px-2.5"
               />
             </div>
-            <span className="text-muted-foreground text-xs font-bold">-</span>
-            <div className="relative flex-1">
+            <span className="text-muted-foreground text-xs font-bold shrink-0">-</span>
+            <div className="relative flex-1 min-w-0">
               <Input
                 type="date"
                 value={endDate}
@@ -216,7 +216,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   setEndDate(e.target.value);
                   applyFilters({ endDate: e.target.value });
                 }}
-                className="w-full h-10 text-xs sm:text-sm"
+                className="w-full h-10 text-xs sm:text-sm px-2.5"
               />
             </div>
 
@@ -270,54 +270,78 @@ export function TransactionList({ transactions }: TransactionListProps) {
               return (
                 <div
                   key={t.id}
-                  className="p-3 sm:p-3.5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-3"
+                  className="p-3 sm:p-3.5 hover:bg-muted/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4"
                 >
-                  {/* Left: Icon, Title, Date, Category */}
-                  <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-                    <div
-                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${
+                  {/* Top section on mobile / Left on desktop: Icon + Title + Category Badge + (Mobile Amount) */}
+                  <div className="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div
+                        className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${
+                          isIncome
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-destructive/10 text-destructive"
+                        }`}
+                      >
+                        {isIncome ? (
+                          <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                        ) : (
+                          <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <h4 className="font-semibold text-foreground text-sm sm:text-base truncate max-w-[140px] xs:max-w-[180px] sm:max-w-md">
+                            {t.title}
+                          </h4>
+                          <Badge
+                            variant={isIncome ? "success" : "secondary"}
+                            className="text-[10px] sm:text-[11px] py-0 px-1.5 font-medium shrink-0"
+                          >
+                            {t.category}
+                          </Badge>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground truncate mt-0.5">
+                          <Calendar className="h-3 w-3 shrink-0" />
+                          <span>{formatDate(t.transaction_date)}</span>
+                          {t.note && (
+                            <>
+                              <span>•</span>
+                              <span className="italic truncate">{t.note}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Amount on Mobile (prominently right-aligned on top row) */}
+                    <span
+                      className={`sm:hidden text-sm font-bold font-mono tracking-tight shrink-0 ${
                         isIncome
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                          : "bg-destructive/10 text-destructive"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-destructive"
                       }`}
                     >
-                      {isIncome ? (
-                        <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                      ) : (
-                        <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                      {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
+                    </span>
+                  </div>
+
+                  {/* Bottom section on mobile (Date/Note + Actions) / Right section on desktop */}
+                  <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 shrink-0 pl-11.5 sm:pl-0">
+                    <div className="sm:hidden flex items-center gap-1.5 text-[11px] text-muted-foreground truncate min-w-0 flex-1">
+                      <Calendar className="h-3 w-3 shrink-0" />
+                      <span>{formatDate(t.transaction_date)}</span>
+                      {t.note && (
+                        <>
+                          <span>•</span>
+                          <span className="italic truncate max-w-[150px] xs:max-w-[200px]">{t.note}</span>
+                        </>
                       )}
                     </div>
 
-                    <div className="space-y-0.5 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-foreground text-sm sm:text-base truncate max-w-[130px] xs:max-w-[200px] sm:max-w-md">
-                          {t.title}
-                        </h4>
-                        <Badge
-                          variant={isIncome ? "success" : "secondary"}
-                          className="text-[10px] sm:text-[11px] py-0 px-2 font-medium shrink-0"
-                        >
-                          {t.category}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
-                        <Calendar className="h-3 w-3 shrink-0" />
-                        <span>{formatDate(t.transaction_date)}</span>
-                        {t.note && (
-                          <>
-                            <span>•</span>
-                            <span className="italic truncate">{t.note}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Nominal & Actions */}
-                  <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                    {/* Amount on Desktop */}
                     <span
-                      className={`text-xs sm:text-base font-bold font-mono tracking-tight ${
+                      className={`hidden sm:inline text-sm sm:text-base font-bold font-mono tracking-tight shrink-0 ${
                         isIncome
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-destructive"
@@ -326,12 +350,13 @@ export function TransactionList({ transactions }: TransactionListProps) {
                       {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
                     </span>
 
-                    <div className="flex items-center gap-0.5">
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-0.5 shrink-0">
                       <Link href={`/transactions/${t.id}/edit`}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground active:scale-95 rounded-lg"
+                          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground active:scale-95 rounded-lg"
                           title="Edit transaksi"
                         >
                           <Edit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -342,7 +367,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeletingId(t.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive active:scale-95 rounded-lg"
+                        className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive active:scale-95 rounded-lg"
                         title="Hapus transaksi"
                       >
                         <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
