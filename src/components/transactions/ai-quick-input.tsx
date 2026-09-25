@@ -237,12 +237,12 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
           placeholder={
             isScanning
               ? "Memproses foto struk..."
-              : "Ketik transaksi atau tap kamera untuk scan struk..."
+              : "Ketik transaksi atau scan struk..."
           }
-          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-11 pr-22 sm:pr-26 py-2.5 sm:py-2 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
+          className="w-full rounded-lg sm:rounded-xl border border-border bg-card pl-11 pr-24 sm:pr-28 py-2.5 sm:py-2 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
         />
 
-        <div className="absolute right-1 flex items-center">
+        <div className="absolute right-1 sm:right-1.5 flex items-center">
           <Button
             type="button"
             onClick={() => handleAction()}

@@ -66,31 +66,31 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-background">
+    <div className="min-h-screen flex flex-col justify-start sm:justify-center items-center px-4 pt-6 pb-12 sm:py-12 bg-background">
       <div className="w-full max-w-md">
         {/* Brand Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2.5 mb-4 group focus-visible:outline-none"
+            className="inline-flex items-center gap-2.5 mb-3 sm:mb-4 group focus-visible:outline-none"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-card group-hover:scale-105 transition-transform">
-              <Wallet className="h-6 w-6" />
+            <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-card group-hover:scale-105 transition-transform">
+              <Wallet className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
-            <span className="text-2xl font-extrabold tracking-tight text-foreground">
+            <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
               Dompet<span className="text-primary">KU</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Daftar Akun Baru
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Mulai kelola finansial Anda dengan lebih rapi hari ini
           </p>
         </div>
 
         {/* Register Form Card */}
-        <Card>
+        <Card className="shadow-soft sm:shadow-card">
           <CardHeader>
             <CardTitle>Registrasi</CardTitle>
             <CardDescription>

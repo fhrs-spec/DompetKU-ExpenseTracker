@@ -145,17 +145,17 @@ export function TransactionList({ transactions }: TransactionListProps) {
   return (
     <div className="space-y-6">
       {/* Filter and Search Bar */}
-      <Card className="p-4 sm:p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 sm:gap-3.5">
+      <Card className="p-3.5 sm:p-5">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-2.5 sm:gap-3.5">
           {/* Search Input */}
-          <div className="sm:col-span-2 md:col-span-4 relative">
-            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <div className="col-span-2 md:col-span-4 relative">
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder="Cari transaksi..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              className="pl-10"
+              className="pl-10 h-10 text-xs sm:text-sm"
             />
           </div>
 
@@ -167,7 +167,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 setSelectedType(e.target.value);
                 applyFilters({ type: e.target.value });
               }}
-              className="flex h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-base sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-xs sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">Semua Tipe</option>
               <option value="expense">Pengeluaran</option>
@@ -183,7 +183,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 setSelectedCategory(e.target.value);
                 applyFilters({ category: e.target.value });
               }}
-              className="flex h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-base sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-xs sm:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">Semua Kategori</option>
               {allCategories.map((cat) => (
@@ -195,7 +195,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </div>
 
           {/* Date Range */}
-          <div className="sm:col-span-2 md:col-span-4 flex items-center gap-2">
+          <div className="col-span-2 md:col-span-4 flex items-center gap-2">
             <div className="relative flex-1">
               <Input
                 type="date"
@@ -204,7 +204,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   setStartDate(e.target.value);
                   applyFilters({ startDate: e.target.value });
                 }}
-                className="w-full text-xs sm:text-sm"
+                className="w-full h-10 text-xs sm:text-sm"
               />
             </div>
             <span className="text-muted-foreground text-xs font-bold">-</span>
@@ -216,7 +216,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   setEndDate(e.target.value);
                   applyFilters({ endDate: e.target.value });
                 }}
-                className="w-full text-xs sm:text-sm"
+                className="w-full h-10 text-xs sm:text-sm"
               />
             </div>
 
@@ -226,7 +226,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 size="icon"
                 onClick={handleResetFilters}
                 title="Reset filter"
-                className="h-10 w-10 sm:h-9 sm:w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -262,40 +262,40 @@ export function TransactionList({ transactions }: TransactionListProps) {
           </div>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {transactions.map((t) => {
-            const isIncome = t.type === "income";
+        <Card className="overflow-hidden border border-border shadow-soft">
+          <div className="divide-y divide-border">
+            {transactions.map((t) => {
+              const isIncome = t.type === "income";
 
-            return (
-              <Card
-                key={t.id}
-                className="p-3.5 sm:p-4.5 transition-all hover:border-primary/30"
-              >
-                <div className="flex items-center justify-between gap-3">
+              return (
+                <div
+                  key={t.id}
+                  className="p-3 sm:p-3.5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-3"
+                >
                   {/* Left: Icon, Title, Date, Category */}
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
                     <div
-                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl ${
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${
                         isIncome
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                           : "bg-destructive/10 text-destructive"
                       }`}
                     >
                       {isIncome ? (
-                        <ArrowUpRight className="h-5 w-5" />
+                        <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <ArrowDownLeft className="h-5 w-5" />
+                        <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </div>
 
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-foreground text-sm sm:text-base truncate max-w-[140px] xs:max-w-[200px] sm:max-w-md">
+                        <h4 className="font-semibold text-foreground text-sm sm:text-base truncate max-w-[130px] xs:max-w-[200px] sm:max-w-md">
                           {t.title}
                         </h4>
                         <Badge
                           variant={isIncome ? "success" : "secondary"}
-                          className="text-[10px] sm:text-[11px] py-0 shrink-0"
+                          className="text-[10px] sm:text-[11px] py-0 px-2 font-medium shrink-0"
                         >
                           {t.category}
                         </Badge>
@@ -315,9 +315,9 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   </div>
 
                   {/* Right: Nominal & Actions */}
-                  <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                  <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                     <span
-                      className={`text-sm sm:text-base font-bold font-mono tracking-tight ${
+                      className={`text-xs sm:text-base font-bold font-mono tracking-tight ${
                         isIncome
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-destructive"
@@ -326,12 +326,12 @@ export function TransactionList({ transactions }: TransactionListProps) {
                       {isIncome ? "+" : "-"} {formatCurrency(Number(t.amount))}
                     </span>
 
-                    <div className="flex items-center gap-0.5 sm:gap-1">
+                    <div className="flex items-center gap-0.5">
                       <Link href={`/transactions/${t.id}/edit`}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground active:scale-95"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground active:scale-95 rounded-lg"
                           title="Edit transaksi"
                         >
                           <Edit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -342,7 +342,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeletingId(t.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive active:scale-95"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive active:scale-95 rounded-lg"
                         title="Hapus transaksi"
                       >
                         <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -350,10 +350,10 @@ export function TransactionList({ transactions }: TransactionListProps) {
                     </div>
                   </div>
                 </div>
-              </Card>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </Card>
       )}
 
       {/* Delete Confirmation Modal */}
