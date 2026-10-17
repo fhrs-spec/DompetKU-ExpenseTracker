@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -20,6 +20,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+function LoginQueryParamsHandler() {
+  const searchParams = useSearchParams();
+
+  React.useEffect(() => {
+    const error = searchParams.get("error");
+    const reset = searchParams.get("reset");
+
+    if (error === "auth_failed") {
+      toast.error("Sesi otentikasi gagal atau tautan telah kadaluarsa.");
+    } else if (error === "reset_link_expired") {
+      toast.error("Tautan reset kata sandi telah kadaluarsa. Silakan ajukan permohonan baru.");
+    }
+
+    if (reset === "success") {
+      toast.success("Kata sandi berhasil diperbarui! Silakan masuk dengan kata sandi baru.");
+    }
+  }, [searchParams]);
+
+  return null;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -58,6 +79,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-start sm:justify-center items-center px-4 pt-6 pb-12 sm:py-12 bg-background">
+      <React.Suspense fallback={null}>
+        <LoginQueryParamsHandler />
+      </React.Suspense>
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="text-center mb-6 sm:mb-8">
@@ -116,6 +140,12 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-semibold text-primary hover:underline transition-colors focus-visible:outline-none"
+                  >
+                    Lupa kata sandi?
+                  </Link>
                 </div>
                 <div className="relative">
                   <Input
