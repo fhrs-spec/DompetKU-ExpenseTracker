@@ -9,7 +9,7 @@ export default async function GoalsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const goals = await getSavingsGoals();
+  const goals = await getSavingsGoals(user?.id);
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Pengguna";
 
   return (

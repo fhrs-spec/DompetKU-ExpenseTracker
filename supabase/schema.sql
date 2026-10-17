@@ -37,14 +37,25 @@ CREATE TABLE IF NOT EXISTS public.savings_goals (
 );
 
 -- Indexes
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date 
   ON public.transactions(user_id, transaction_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_user_type_date 
+  ON public.transactions(user_id, type, transaction_date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_transactions_user_category 
   ON public.transactions(user_id, category);
 
+CREATE INDEX IF NOT EXISTS idx_transactions_title_trgm 
+  ON public.transactions USING gin (title gin_trgm_ops);
+
 CREATE INDEX IF NOT EXISTS idx_savings_goals_user 
   ON public.savings_goals(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_savings_goals_user_deadline 
+  ON public.savings_goals(user_id, deadline ASC);
 
 -- RLS policies
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -162,5 +173,28 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.deposit_to_savings_goal(UUID, NUMERIC) TO authenticated;
+
+-- High-performance aggregated financial summary RPC function
+CREATE OR REPLACE FUNCTION public.get_financial_summary(
+  p_start_date DATE,
+  p_end_date DATE
+)
+RETURNS JSON
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT json_build_object(
+    'total_balance', COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0),
+    'period_income', COALESCE(SUM(CASE WHEN type = 'income' AND transaction_date BETWEEN p_start_date AND p_end_date THEN amount ELSE 0 END), 0),
+    'period_expense', COALESCE(SUM(CASE WHEN type = 'expense' AND transaction_date BETWEEN p_start_date AND p_end_date THEN amount ELSE 0 END), 0)
+  )
+  FROM public.transactions
+  WHERE user_id = auth.uid();
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_financial_summary(DATE, DATE) TO authenticated;
+
 
 

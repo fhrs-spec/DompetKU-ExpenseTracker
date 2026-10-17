@@ -61,12 +61,18 @@ const CATEGORY_COLORS = [
 
 export async function getAnalyticsData(
   year?: number,
-  month?: number
+  month?: number,
+  userId?: string
 ): Promise<AnalyticsData> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
 
   const now = new Date();
   const selectedYear =
@@ -78,7 +84,7 @@ export async function getAnalyticsData(
       ? Math.floor(month)
       : now.getMonth() + 1;
 
-  if (!user) {
+  if (!currentUserId) {
     return {
       selectedMonth,
       selectedYear,
@@ -99,22 +105,45 @@ export async function getAnalyticsData(
     };
   }
 
-  // 0. Compute overall total balance
-  const { data: allTxs } = await supabase
-    .from("transactions")
-    .select("amount, type")
-    .eq("user_id", user.id);
-
+  // 0. Compute overall total balance (attempt RPC first)
   let totalBalance = 0;
-  if (allTxs) {
-    const rows = allTxs as unknown as Array<{
-      amount: number;
-      type: "income" | "expense";
-    }>;
-    totalBalance = rows.reduce((acc, curr) => {
-      const amt = Number(curr.amount) || 0;
-      return curr.type === "income" ? acc + amt : acc - amt;
-    }, 0);
+  let rpcSuccess = false;
+
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "get_financial_summary",
+      {
+        p_start_date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
+        p_end_date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
+      }
+    );
+    if (!rpcError && rpcData && typeof rpcData === "object") {
+      const summary = rpcData as { total_balance?: number };
+      if (typeof summary.total_balance === "number") {
+        totalBalance = summary.total_balance;
+        rpcSuccess = true;
+      }
+    }
+  } catch {
+    // Fall back to table scan
+  }
+
+  if (!rpcSuccess) {
+    const { data: allTxs } = await supabase
+      .from("transactions")
+      .select("amount, type")
+      .eq("user_id", currentUserId);
+
+    if (allTxs) {
+      const rows = allTxs as unknown as Array<{
+        amount: number;
+        type: "income" | "expense";
+      }>;
+      totalBalance = rows.reduce((acc, curr) => {
+        const amt = Number(curr.amount) || 0;
+        return curr.type === "income" ? acc + amt : acc - amt;
+      }, 0);
+    }
   }
 
   // Calculate start & end of selected month
@@ -126,7 +155,7 @@ export async function getAnalyticsData(
   const { data: monthTransactions } = await supabase
     .from("transactions")
     .select("title, amount, type, category, transaction_date")
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .gte("transaction_date", startDate)
     .lte("transaction_date", endDate)
     .order("transaction_date", { ascending: false });
@@ -220,7 +249,7 @@ export async function getAnalyticsData(
   const { data: historicalData } = await supabase
     .from("transactions")
     .select("amount, type, transaction_date")
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .gte("transaction_date", sixMonthsStart)
     .lte("transaction_date", endDate);
 

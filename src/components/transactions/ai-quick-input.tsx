@@ -81,7 +81,10 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
   const [prompt, setPrompt] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(false);
-  const [quotaInfo, setQuotaInfo] = React.useState<{ isOwner: boolean } | null>(null);
+  const [quotaInfo, setQuotaInfo] = React.useState<{
+    isOwner: boolean;
+    parseLimit?: number;
+  } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
@@ -194,6 +197,10 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
             <Crown className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
             Unlimited (Owner)
+          </span>
+        ) : quotaInfo?.parseLimit ? (
+          <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+            Kuota: {quotaInfo.parseLimit}x/hari · Gemini
           </span>
         ) : (
           <span className="text-[10px] text-muted-foreground">

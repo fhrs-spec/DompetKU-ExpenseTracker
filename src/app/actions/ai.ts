@@ -93,7 +93,7 @@ export async function getFinancialHealthCheckAction(
         ? Math.floor(month)
         : now.getMonth() + 1;
 
-    const analytics = await getAnalyticsData(validYear, validMonth);
+    const analytics = await getAnalyticsData(validYear, validMonth, user.id);
 
     const monthName = new Intl.DateTimeFormat("id-ID", { month: "long" }).format(
       new Date(validYear, validMonth - 1, 1)

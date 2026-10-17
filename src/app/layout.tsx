@@ -13,6 +13,16 @@ export const metadata: Metadata = {
   title: "DompetKU — Pengelola Keuangan Pribadi",
   description:
     "Pencatat pemasukan, pengeluaran, dan target tabungan bulanan dengan visualisasi analitik dan laporan PDF.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "DompetKU",
+  },
 };
 
 export default function RootLayout({

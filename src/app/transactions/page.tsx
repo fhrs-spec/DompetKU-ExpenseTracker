@@ -28,8 +28,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   } = await supabase.auth.getUser();
 
   const [transactions, summary] = await Promise.all([
-    getTransactions(filters as TransactionFilterOptions),
-    getMonthlySummary(),
+    getTransactions(filters as TransactionFilterOptions, user?.id),
+    getMonthlySummary(undefined, undefined, user?.id),
   ]);
 
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Pengguna";

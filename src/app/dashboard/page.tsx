@@ -19,10 +19,10 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   const [summary, transactions, chartData, goals] = await Promise.all([
-    getMonthlySummary(),
-    getTransactions({ limit: 5 }),
-    getDashboardChartData(),
-    getSavingsGoals(),
+    getMonthlySummary(undefined, undefined, user?.id),
+    getTransactions({ limit: 5 }, user?.id),
+    getDashboardChartData(undefined, undefined, user?.id),
+    getSavingsGoals(user?.id),
   ]);
 
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Pengguna";

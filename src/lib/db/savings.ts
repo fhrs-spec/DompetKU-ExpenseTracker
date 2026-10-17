@@ -8,18 +8,25 @@ export interface EnrichedSavingsGoal extends SavingsGoal {
   isOverdue: boolean;
 }
 
-export async function getSavingsGoals(): Promise<EnrichedSavingsGoal[]> {
+export async function getSavingsGoals(
+  userId?: string
+): Promise<EnrichedSavingsGoal[]> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) return [];
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
+
+  if (!currentUserId) return [];
 
   const { data, error } = await supabase
     .from("savings_goals")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .order("deadline", { ascending: true });
 
   if (error || !data) {
@@ -61,20 +68,26 @@ export async function getSavingsGoals(): Promise<EnrichedSavingsGoal[]> {
 }
 
 export async function getSavingsGoalById(
-  id: string
+  id: string,
+  userId?: string
 ): Promise<SavingsGoal | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
+
+  if (!currentUserId) return null;
 
   const { data, error } = await supabase
     .from("savings_goals")
     .select("*")
     .eq("id", id)
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .single();
 
   if (error || !data) return null;

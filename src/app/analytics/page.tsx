@@ -44,7 +44,7 @@ export default async function AnalyticsPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const analytics = await getAnalyticsData(selectedYear, selectedMonth);
+  const analytics = await getAnalyticsData(selectedYear, selectedMonth, user?.id);
   const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Pengguna";
 
   const monthName = new Intl.DateTimeFormat("id-ID", { month: "long" }).format(

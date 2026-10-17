@@ -11,20 +11,25 @@ export interface TransactionFilterOptions {
 }
 
 export async function getTransactions(
-  filters?: TransactionFilterOptions
+  filters?: TransactionFilterOptions,
+  userId?: string
 ): Promise<Transaction[]> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
 
-  if (!user) return [];
+  if (!currentUserId) return [];
 
   let query = supabase
     .from("transactions")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .order("transaction_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -68,21 +73,26 @@ export async function getTransactions(
 }
 
 export async function getTransactionById(
-  id: string
+  id: string,
+  userId?: string
 ): Promise<Transaction | null> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
 
-  if (!user) return null;
+  if (!currentUserId) return null;
 
   const { data, error } = await supabase
     .from("transactions")
     .select("*")
     .eq("id", id)
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .single();
 
   if (error || !data) {
@@ -92,13 +102,22 @@ export async function getTransactionById(
   return data as unknown as Transaction;
 }
 
-export async function getMonthlySummary(year?: number, month?: number) {
+export async function getMonthlySummary(
+  year?: number,
+  month?: number,
+  userId?: string
+) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) {
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
+
+  if (!currentUserId) {
     return {
       totalBalance: 0,
       monthlyIncome: 0,
@@ -116,11 +135,41 @@ export async function getMonthlySummary(year?: number, month?: number) {
   const lastDay = new Date(targetYear, targetMonth, 0).getDate();
   const endDate = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
-  // 1. Fetch all transactions to compute overall total balance
+  // Try high-performance database RPC function first
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "get_financial_summary",
+      {
+        p_start_date: startDate,
+        p_end_date: endDate,
+      }
+    );
+
+    if (!rpcError && rpcData && typeof rpcData === "object") {
+      const summary = rpcData as {
+        total_balance?: number;
+        period_income?: number;
+        period_expense?: number;
+      };
+      const totalBalance = Number(summary.total_balance) || 0;
+      const monthlyIncome = Number(summary.period_income) || 0;
+      const monthlyExpense = Number(summary.period_expense) || 0;
+      return {
+        totalBalance,
+        monthlyIncome,
+        monthlyExpense,
+        netDifference: monthlyIncome - monthlyExpense,
+      };
+    }
+  } catch {
+    // Fall back to standard query if RPC not defined
+  }
+
+  // Fallback 1: Fetch all transactions to compute overall total balance
   const { data: allTransactions } = await supabase
     .from("transactions")
     .select("amount, type")
-    .eq("user_id", user.id);
+    .eq("user_id", currentUserId);
 
   let totalBalance = 0;
   if (allTransactions) {
@@ -134,11 +183,11 @@ export async function getMonthlySummary(year?: number, month?: number) {
     }, 0);
   }
 
-  // 2. Fetch current month transactions for income and expense totals
+  // Fallback 2: Fetch current month transactions for income and expense totals
   const { data: monthlyTransactions } = await supabase
     .from("transactions")
     .select("amount, type")
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .gte("transaction_date", startDate)
     .lte("transaction_date", endDate);
 
@@ -167,13 +216,22 @@ export async function getMonthlySummary(year?: number, month?: number) {
   };
 }
 
-export async function getDashboardChartData(year?: number, month?: number) {
+export async function getDashboardChartData(
+  year?: number,
+  month?: number,
+  userId?: string
+) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) return [];
+  let currentUserId = userId;
+  if (!currentUserId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id;
+  }
+
+  if (!currentUserId) return [];
 
   const now = new Date();
   const targetYear = year ?? now.getFullYear();
@@ -186,7 +244,7 @@ export async function getDashboardChartData(year?: number, month?: number) {
   const { data } = await supabase
     .from("transactions")
     .select("transaction_date, amount, type")
-    .eq("user_id", user.id)
+    .eq("user_id", currentUserId)
     .gte("transaction_date", startDate)
     .lte("transaction_date", endDate)
     .order("transaction_date", { ascending: true });
