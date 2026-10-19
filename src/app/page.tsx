@@ -251,7 +251,7 @@ export default async function HomePage() {
               <div>
                 <div className="flex items-center gap-2">
                   <Crown className="h-5 w-5 text-amber-500 fill-amber-500" />
-                  <h3 className="text-lg font-bold text-foreground">SaaS Pro Lifetime</h3>
+                  <h3 className="text-lg font-bold text-foreground">Pro Lifetime</h3>
                 </div>
                 <div className="mt-4 flex items-baseline gap-1.5">
                   <span className="text-4xl sm:text-5xl font-extrabold text-foreground font-mono tracking-tight">

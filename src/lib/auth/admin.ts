@@ -38,14 +38,14 @@ export function isAppOwner(
 export const ADMIN_CONTACT = {
   name: "Fharas",
   email: "mfharas5@gmail.com",
-  whatsappNumber: "6281234567890",
-  whatsapp: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "6281234567890",
+  whatsappNumber: "6282279510673",
+  whatsapp: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "6282279510673",
   whatsappUrl: (msg?: string) => {
-    const rawNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "6281234567890";
+    const rawNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || "6282279510673";
     const phone = rawNumber.replace(/\D/g, "");
     const text = encodeURIComponent(
       msg ||
-        "Halo Mas Fharas, saya tertarik dengan akses lisensi penuh DompetKU SaaS Pro ($99)."
+      "Halo Mas Fharas, saya tertarik dengan akses lisensi penuh DompetKU SaaS Pro ($99)."
     );
     return `https://wa.me/${phone}?text=${text}`;
   },
@@ -59,7 +59,7 @@ export const ADMIN_CONTACT = {
     );
     const bod = encodeURIComponent(
       body ||
-        "Halo Mas Fharas,\n\nSaya ingin membeli lisensi DompetKU SaaS Pro ($99 Lifetime Access). Mohon info instruksi pembayaran atau aktivasi akun saya.\n\nTerima kasih."
+      "Halo Mas Fharas,\n\nSaya ingin membeli lisensi DompetKU SaaS Pro ($99 Lifetime Access). Mohon info instruksi pembayaran atau aktivasi akun saya.\n\nTerima kasih."
     );
     return `mailto:${adminEmail}?subject=${sub}&body=${bod}`;
   },
