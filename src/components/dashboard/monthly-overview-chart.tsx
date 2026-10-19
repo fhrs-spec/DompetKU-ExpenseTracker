@@ -38,98 +38,106 @@ export function MonthlyOverviewChart({ data }: MonthlyOverviewChartProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 min-h-[300px] flex items-center justify-center pt-4">
+      <CardContent className="flex-1 min-h-[300px] flex flex-col justify-center pt-4">
         {!hasActivity ? (
           <div className="py-16 text-center text-muted-foreground text-sm">
             Belum ada data transaksi pada bulan ini untuk divisualisasikan.
           </div>
         ) : (
-          <div className="h-[280px] sm:h-[300px] w-full min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={data}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  className="stroke-border"
-                />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11 }}
-                  interval="preserveStartEnd"
-                  className="fill-muted-foreground"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11 }}
-                  tickFormatter={(val) =>
-                    val >= 1000000
-                      ? `${(val / 1000000).toFixed(1)}jt`
-                      : val >= 1000
-                      ? `${(val / 1000).toFixed(0)}rb`
-                      : `${val}`
-                  }
-                  className="fill-muted-foreground"
-                />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="rounded-xl border border-border bg-card p-3 shadow-card text-xs">
-                          <p className="font-semibold text-foreground mb-1.5">
-                            {label}
-                          </p>
-                          {payload.map((entry) => (
-                            <div
-                              key={entry.name}
-                              className="flex items-center justify-between gap-4 py-0.5"
-                            >
-                              <span className="text-muted-foreground capitalize">
-                                {entry.name === "income"
-                                  ? "Pemasukan"
-                                  : "Pengeluaran"}
-                                :
-                              </span>
-                              <span className="font-bold font-mono text-foreground">
-                                {formatCurrency(Number(entry.value))}
-                              </span>
+          <div className="w-full flex-1 flex flex-col justify-between">
+            <div className="w-full overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-border">
+              <div className="min-w-[580px] sm:min-w-0 h-[280px] sm:h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={data}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      className="stroke-border"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 11 }}
+                      interval="preserveStartEnd"
+                      className="fill-muted-foreground"
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 11 }}
+                      tickFormatter={(val) =>
+                        val >= 1000000
+                          ? `${(val / 1000000).toFixed(1)}jt`
+                          : val >= 1000
+                          ? `${(val / 1000).toFixed(0)}rb`
+                          : `${val}`
+                      }
+                      className="fill-muted-foreground"
+                    />
+                    <Tooltip
+                      cursor={{ fill: "hsl(var(--muted)/0.3)" }}
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="rounded-xl border border-border bg-card p-3 shadow-card text-xs">
+                              <p className="font-semibold text-foreground mb-1.5">
+                                {label}
+                              </p>
+                              {payload.map((entry) => (
+                                <div
+                                  key={entry.name}
+                                  className="flex items-center justify-between gap-4 py-0.5"
+                                >
+                                  <span className="text-muted-foreground capitalize">
+                                    {entry.name === "income"
+                                      ? "Pemasukan"
+                                      : "Pengeluaran"}
+                                    :
+                                  </span>
+                                  <span className="font-bold font-mono text-foreground">
+                                    {formatCurrency(Number(entry.value))}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Legend
-                  verticalAlign="top"
-                  align="right"
-                  iconType="circle"
-                  formatter={(value) => (
-                    <span className="text-xs font-medium text-foreground">
-                      {value === "income" ? "Pemasukan" : "Pengeluaran"}
-                    </span>
-                  )}
-                />
-                <Bar
-                  dataKey="income"
-                  fill="#22C55E"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={28}
-                />
-                <Bar
-                  dataKey="expense"
-                  fill="#DC2626"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={28}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Legend
+                      verticalAlign="top"
+                      align="right"
+                      iconType="circle"
+                      formatter={(value) => (
+                        <span className="text-xs font-medium text-foreground">
+                          {value === "income" ? "Pemasukan" : "Pengeluaran"}
+                        </span>
+                      )}
+                    />
+                    <Bar
+                      dataKey="income"
+                      fill="#22C55E"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={24}
+                    />
+                    <Bar
+                      dataKey="expense"
+                      fill="#DC2626"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={24}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="flex sm:hidden items-center justify-center gap-1.5 text-[11px] text-muted-foreground/75 pt-1">
+              <span>← Geser grafik untuk melihat hari lainnya →</span>
+            </div>
           </div>
         )}
       </CardContent>

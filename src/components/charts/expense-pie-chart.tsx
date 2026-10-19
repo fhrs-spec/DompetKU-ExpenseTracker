@@ -25,8 +25,9 @@ export function ExpensePieChart({ categories }: ExpensePieChartProps) {
 
       <CardContent className="flex-1 flex flex-col justify-between pt-2">
         {!hasExpenses ? (
-          <div className="py-16 text-center text-muted-foreground text-sm flex-1 flex items-center justify-center">
-            Belum ada pengeluaran pada bulan ini.
+          <div className="py-16 text-center text-muted-foreground text-sm flex-1 flex flex-col items-center justify-center gap-2">
+            <PieIcon className="h-8 w-8 text-muted-foreground/40" />
+            <p>Belum ada pengeluaran pada bulan ini.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">

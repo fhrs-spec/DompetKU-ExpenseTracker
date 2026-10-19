@@ -21,29 +21,42 @@ interface MultiMonthBarChartProps {
 }
 
 export function MultiMonthBarChart({ data }: MultiMonthBarChartProps) {
+  const hasData = data.some((d) => d.income > 0 || d.expense > 0);
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div className="flex items-center gap-2">
-          <BarChart2 className="h-5 w-5 text-muted-foreground" />
-          <CardTitle className="text-lg">
-            Tren Pemasukan vs Pengeluaran (6 Bulan)
-          </CardTitle>
+        <div>
+          <div className="flex items-center gap-2">
+            <BarChart2 className="h-5 w-5 text-muted-foreground" />
+            <CardTitle className="text-lg">
+              Tren Pemasukan vs Pengeluaran (6 Bulan)
+            </CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Komparasi arus kas 6 bulan terakhir hingga periode terpilih
+          </p>
         </div>
       </CardHeader>
 
       <CardContent className="flex-1 min-h-[300px] flex items-center justify-center pt-4">
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                className="stroke-border"
-              />
+        {!hasData ? (
+          <div className="py-16 text-center text-muted-foreground text-sm flex flex-col items-center justify-center gap-2">
+            <BarChart2 className="h-8 w-8 text-muted-foreground/40" />
+            <p>Belum ada riwayat transaksi dalam 6 bulan terakhir.</p>
+          </div>
+        ) : (
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={data}
+                margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  className="stroke-border"
+                />
               <XAxis
                 dataKey="month"
                 tickLine={false}
@@ -65,6 +78,7 @@ export function MultiMonthBarChart({ data }: MultiMonthBarChartProps) {
                 className="fill-muted-foreground"
               />
               <Tooltip
+                cursor={{ fill: "hsl(var(--muted)/0.3)" }}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
@@ -107,18 +121,19 @@ export function MultiMonthBarChart({ data }: MultiMonthBarChartProps) {
               <Bar
                 dataKey="income"
                 fill="#22C55E"
-                radius={[6, 6, 0, 0]}
-                maxBarSize={32}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={28}
               />
               <Bar
                 dataKey="expense"
                 fill="#DC2626"
-                radius={[6, 6, 0, 0]}
-                maxBarSize={32}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={28}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
+        )}
       </CardContent>
     </Card>
   );

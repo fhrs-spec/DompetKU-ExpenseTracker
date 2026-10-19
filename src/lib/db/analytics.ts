@@ -40,6 +40,7 @@ export interface AnalyticsData {
   selectedMonth: number;
   selectedYear: number;
   totalBalance: number;
+  openingBalance: number;
   stats: AnalyticsStats;
   categoryExpenses: CategoryExpense[];
   multiMonthTrend: MonthlyComparison[];
@@ -89,6 +90,7 @@ export async function getAnalyticsData(
       selectedMonth,
       selectedYear,
       totalBalance: 0,
+      openingBalance: 0,
       stats: {
         totalIncome: 0,
         totalExpense: 0,
@@ -208,10 +210,35 @@ export async function getAnalyticsData(
     })
   );
 
-  const avgDailyExpense = Math.round(totalExpense / lastDay);
+  // Calculate realistic average daily expense (elapsed days for current month, lastDay for past months)
+  const isCurrentMonth =
+    selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1;
+  const effectiveDays = isCurrentMonth
+    ? Math.max(1, Math.min(now.getDate(), lastDay))
+    : Math.max(1, lastDay);
+  const avgDailyExpense = Math.round(totalExpense / effectiveDays);
 
-  // 2. Compute cumulative daily balance trend throughout selected month
-  let cumulative = 0;
+  // Calculate opening balance carried over before the selected month
+  const { data: previousTxs } = await supabase
+    .from("transactions")
+    .select("amount, type")
+    .eq("user_id", currentUserId)
+    .lt("transaction_date", startDate);
+
+  let openingBalance = 0;
+  if (previousTxs) {
+    const rows = previousTxs as unknown as Array<{
+      amount: number;
+      type: "income" | "expense";
+    }>;
+    openingBalance = rows.reduce((acc, curr) => {
+      const amt = Number(curr.amount) || 0;
+      return curr.type === "income" ? acc + amt : acc - amt;
+    }, 0);
+  }
+
+  // 2. Compute cumulative daily balance trend throughout selected month starting from opening balance
+  let cumulative = openingBalance;
   const dailyBalanceMap = new Map<string, number>();
 
   for (let d = 1; d <= lastDay; d++) {
@@ -294,6 +321,7 @@ export async function getAnalyticsData(
     selectedMonth,
     selectedYear,
     totalBalance,
+    openingBalance,
     stats: {
       totalIncome,
       totalExpense,
