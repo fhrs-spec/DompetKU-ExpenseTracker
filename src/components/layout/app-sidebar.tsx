@@ -98,7 +98,7 @@ export function AppSidebar({ userEmail, userName }: AppSidebarProps) {
               <p className="text-sm font-semibold text-foreground truncate">
                 {userName || "Pengguna"}
               </p>
-              {isAppOwner(userEmail) && (
+              {isAppOwner(userEmail, userName) && (
                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0 shadow-soft">
                   <Crown className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
                   Owner

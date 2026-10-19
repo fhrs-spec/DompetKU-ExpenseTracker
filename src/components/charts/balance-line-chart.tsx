@@ -72,6 +72,8 @@ export function BalanceLineChart({ data }: BalanceLineChartProps) {
                       className="fill-muted-foreground"
                     />
                     <YAxis
+                      domain={["auto", "auto"]}
+                      padding={{ top: 20, bottom: 20 }}
                       tickLine={false}
                       axisLine={false}
                       tick={{ fontSize: 11 }}

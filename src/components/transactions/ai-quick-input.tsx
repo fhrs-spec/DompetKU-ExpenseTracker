@@ -138,7 +138,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
     }
 
     setIsScanning(true);
-    const toastId = toast.loading("Mengompres & memindai struk dengan Gemini AI...");
+    const toastId = toast.loading("Mengompres & memindai struk dengan Smart AI...");
 
     try {
       const { base64, mimeType } = await compressImageFile(file);
@@ -200,11 +200,11 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
           </span>
         ) : quotaInfo?.parseLimit ? (
           <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-            Kuota: {quotaInfo.parseLimit}x/hari · Gemini
+            Kuota: {quotaInfo.parseLimit}x/hari · AI Assistant
           </span>
         ) : (
           <span className="text-[10px] text-muted-foreground">
-            Gemini Flash
+            AI Assistant
           </span>
         )}
       </div>
@@ -213,7 +213,7 @@ export function AiQuickInput({ onParsed, disabled }: AiQuickInputProps) {
       {isScanning && (
         <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium animate-pulse">
           <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-          <span>Sedang memindai struk belanja dengan Gemini AI...</span>
+          <span>Sedang memindai struk belanja dengan Smart AI Scanner...</span>
         </div>
       )}
 

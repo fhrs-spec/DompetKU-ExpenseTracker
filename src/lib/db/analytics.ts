@@ -107,6 +107,11 @@ export async function getAnalyticsData(
     };
   }
 
+  // Calculate start & end of selected month
+  const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`;
+  const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
+  const endDate = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
   // 0. Compute overall total balance (attempt RPC first)
   let totalBalance = 0;
   let rpcSuccess = false;
@@ -115,8 +120,8 @@ export async function getAnalyticsData(
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "get_financial_summary",
       {
-        p_start_date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
-        p_end_date: `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`,
+        p_start_date: startDate,
+        p_end_date: endDate,
       }
     );
     if (!rpcError && rpcData && typeof rpcData === "object") {
@@ -147,11 +152,6 @@ export async function getAnalyticsData(
       }, 0);
     }
   }
-
-  // Calculate start & end of selected month
-  const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-01`;
-  const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
-  const endDate = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
   // 1. Fetch transactions for selected month
   const { data: monthTransactions } = await supabase
@@ -241,17 +241,34 @@ export async function getAnalyticsData(
   let cumulative = openingBalance;
   const dailyBalanceMap = new Map<string, number>();
 
-  for (let d = 1; d <= lastDay; d++) {
+  const isFutureMonth =
+    selectedYear > now.getFullYear() ||
+    (selectedYear === now.getFullYear() && selectedMonth > now.getMonth() + 1);
+
+  const maxTxDay = currentMonthRows.reduce((max, tx) => {
+    const parts = tx.transaction_date.split("-");
+    const day = parts.length === 3 ? parseInt(parts[2], 10) : 0;
+    return Math.max(max, isNaN(day) ? 0 : day);
+  }, 0);
+
+  const activeLastDay = isCurrentMonth
+    ? Math.min(lastDay, Math.max(now.getDate(), maxTxDay))
+    : isFutureMonth
+    ? maxTxDay
+    : lastDay;
+
+  for (let d = 1; d <= activeLastDay; d++) {
     const dStr = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     dailyBalanceMap.set(dStr, 0);
   }
 
   currentMonthRows.forEach((tx) => {
+    const dateKey = tx.transaction_date.slice(0, 10);
     const amt = Number(tx.amount) || 0;
     const diff = tx.type === "income" ? amt : -amt;
     dailyBalanceMap.set(
-      tx.transaction_date,
-      (dailyBalanceMap.get(tx.transaction_date) || 0) + diff
+      dateKey,
+      (dailyBalanceMap.get(dateKey) || 0) + diff
     );
   });
 

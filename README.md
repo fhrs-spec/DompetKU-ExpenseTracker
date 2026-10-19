@@ -1,6 +1,6 @@
 # DompetKU
 
-Aplikasi web pencatat keuangan pribadi untuk mengelola pemasukan, pengeluaran, dan target tabungan bulanan. Dilengkapi pencatatan cerdas berbasis Google Gemini AI, visualisasi analitik interaktif, audit kesehatan arus kas, dan ekspor laporan PDF.
+Aplikasi web pencatat keuangan pribadi untuk mengelola pemasukan, pengeluaran, dan target tabungan bulanan. Dilengkapi pencatatan cerdas berbasis Smart AI, visualisasi analitik interaktif, audit kesehatan arus kas, dan ekspor laporan PDF.
 
 ## Screenshot
 
@@ -29,7 +29,7 @@ Aplikasi web pencatat keuangan pribadi untuk mengelola pemasukan, pengeluaran, d
 - **Autentikasi & Akun**:
   - Registrasi, login, logout, dan proteksi rute berbasis session Supabase SSR.
   - Row Level Security (RLS) pada seluruh tabel untuk memastikan isolasi data per pengguna.
-- **Pencatatan Cerdas AI (Google Gemini Flash)**:
+- **Pencatatan Cerdas AI (Smart AI Assistant)**:
   - **Natural Language Parsing**: Catat transaksi dengan mengetik kalimat bebas berbahasa Indonesia (contoh: *"Beli kopi kenangan 25rb tadi siang"* atau *"Gaji kantor 5jt kemarin"*).
   - **1-Click Direct Save**: Opsi untuk mengekstrak dan langsung menyimpan transaksi ke database Supabase dalam satu klik atau tombol Enter.
   - **Isi Formulir Otomatis**: Opsi untuk memetakan hasil ekstraksi ke formulir jika pengguna ingin meninjau atau mengedit sebelum menyimpan.

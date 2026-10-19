@@ -1,7 +1,7 @@
 {
   "name": "DompetKU — Pengelola Keuangan Pribadi",
   "short_name": "DompetKU",
-  "description": "Pencatat pemasukan, pengeluaran, dan target tabungan bulanan dengan Google Gemini AI.",
+  "description": "Pencatat pemasukan, pengeluaran, dan target tabungan bulanan dengan Smart AI.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

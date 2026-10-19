@@ -124,7 +124,7 @@ export function AiAdvisorCard({ year, month, periodLabel }: AiAdvisorCardProps) 
                 Audit Kesehatan Keuangan AI
               </h2>
               <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                <Zap className="h-3 w-3" /> Gemini
+                <Zap className="h-3 w-3" /> Smart AI Advisor
               </span>
               {quotaInfo?.isOwner && (
                 <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 text-[11px] font-semibold">

@@ -2,6 +2,7 @@ import * as React from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import { MobileBottomNav } from "@/components/layout/bottom-nav";
+import { PaywallGuard } from "@/components/saas/paywall-guard";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -19,7 +20,9 @@ export function AppLayout({ children, userName, userEmail }: AppLayoutProps) {
       <div className="flex-1 min-w-0 md:pl-64 flex flex-col min-h-screen">
         <AppHeader userName={userName} userEmail={userEmail} />
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pb-24 md:pb-8 max-w-7xl w-full mx-auto">
-          {children}
+          <PaywallGuard userEmail={userEmail} userName={userName}>
+            {children}
+          </PaywallGuard>
         </main>
       </div>
 

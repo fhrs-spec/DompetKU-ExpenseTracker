@@ -8,7 +8,7 @@ export interface ParseReceiptOptions {
 }
 
 /**
- * Parses a shopping receipt / invoice image using Gemini Vision AI.
+ * Parses a shopping receipt / invoice image using Smart Vision AI.
  * Extracts merchant name, grand total, transaction date, category, and items note.
  */
 export async function parseReceiptWithAI(

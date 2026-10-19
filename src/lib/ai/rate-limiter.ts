@@ -36,10 +36,11 @@ function getTodayKey(): string {
 export function checkAIRateLimit(
   userId: string,
   userEmail: string | undefined,
-  action: AIActionType
+  action: AIActionType,
+  userName?: string
 ): RateLimitResult {
   // Owner bypass: 100% Unlimited
-  if (isAppOwner(userEmail)) {
+  if (isAppOwner(userEmail, userName)) {
     return {
       allowed: true,
       isOwner: true,

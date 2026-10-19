@@ -216,11 +216,17 @@ export async function getMonthlySummary(
   };
 }
 
+export interface DashboardChartDataPoint {
+  date: string;
+  income: number;
+  expense: number;
+}
+
 export async function getDashboardChartData(
   year?: number,
   month?: number,
   userId?: string
-) {
+): Promise<DashboardChartDataPoint[]> {
   const supabase = await createClient();
 
   let currentUserId = userId;
@@ -255,9 +261,33 @@ export async function getDashboardChartData(
     new Date(targetYear, targetMonth - 1, 1)
   );
 
-  const map = new Map<string, { date: string; income: number; expense: number }>();
+  const rows = (data as unknown as Array<{
+    transaction_date: string;
+    amount: number;
+    type: "income" | "expense";
+  }>) || [];
 
-  for (let d = 1; d <= lastDay; d++) {
+  const isCurrentMonth =
+    targetYear === now.getFullYear() && targetMonth === now.getMonth() + 1;
+  const isFutureMonth =
+    targetYear > now.getFullYear() ||
+    (targetYear === now.getFullYear() && targetMonth > now.getMonth() + 1);
+
+  const maxTxDay = rows.reduce((max, item) => {
+    const parts = item.transaction_date.split("-");
+    const day = parts.length === 3 ? parseInt(parts[2], 10) : 0;
+    return Math.max(max, isNaN(day) ? 0 : day);
+  }, 0);
+
+  const activeLastDay = isCurrentMonth
+    ? Math.min(lastDay, Math.max(now.getDate(), maxTxDay))
+    : isFutureMonth
+    ? maxTxDay
+    : lastDay;
+
+  const map = new Map<string, DashboardChartDataPoint>();
+
+  for (let d = 1; d <= activeLastDay; d++) {
     const dayStr = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     map.set(dayStr, {
       date: `${d} ${monthLabel}`,
@@ -266,14 +296,9 @@ export async function getDashboardChartData(
     });
   }
 
-  const rows = data as unknown as Array<{
-    transaction_date: string;
-    amount: number;
-    type: "income" | "expense";
-  }>;
-
   rows.forEach((item) => {
-    const entry = map.get(item.transaction_date);
+    const dateKey = item.transaction_date.slice(0, 10);
+    const entry = map.get(dateKey);
     if (entry) {
       const amt = Number(item.amount) || 0;
       if (item.type === "income") entry.income += amt;

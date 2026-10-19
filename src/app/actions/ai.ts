@@ -34,8 +34,8 @@ export async function parseTransactionAction(
       return { success: false, error: "Silakan login terlebih dahulu." };
     }
 
-    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com)
-    const rateCheck = checkAIRateLimit(user.id, user.email, "parse");
+    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com / fharas)
+    const rateCheck = checkAIRateLimit(user.id, user.email, "parse", user.user_metadata?.name);
     if (!rateCheck.allowed) {
       return { success: false, error: rateCheck.error };
     }
@@ -77,8 +77,8 @@ export async function getFinancialHealthCheckAction(
       return { success: false, error: "Silakan login terlebih dahulu." };
     }
 
-    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com)
-    const rateCheck = checkAIRateLimit(user.id, user.email, "health_audit");
+    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com / fharas)
+    const rateCheck = checkAIRateLimit(user.id, user.email, "health_audit", user.user_metadata?.name);
     if (!rateCheck.allowed) {
       return { success: false, error: rateCheck.error };
     }
@@ -148,8 +148,8 @@ export async function parseReceiptAction(
       return { success: false, error: "Silakan login terlebih dahulu." };
     }
 
-    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com)
-    const rateCheck = checkAIRateLimit(user.id, user.email, "scan_receipt");
+    // Rate limit check (Bypassed for verified owner mfharas5@gmail.com / fharas)
+    const rateCheck = checkAIRateLimit(user.id, user.email, "scan_receipt", user.user_metadata?.name);
     if (!rateCheck.allowed) {
       return { success: false, error: rateCheck.error };
     }
@@ -193,7 +193,7 @@ export async function getUserAIQuotaAction(): Promise<{
     return { isOwner: false, parseLimit: 0, scanLimit: 0, auditLimit: 0 };
   }
 
-  const isOwner = isAppOwner(user.email);
+  const isOwner = isAppOwner(user.email, user.user_metadata?.name);
   return {
     isOwner,
     email: user.email,
